@@ -1,293 +1,248 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contador de Treinos</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contador de Treinos</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #e7eef7;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            background: linear-gradient(135deg, #ffecd2, #fcb69f);
-            width: 420px;
-            padding: 35px;
-            border-radius: 20px;
-            box-shadow: 0 4px 18px rgba(0,0,0,0.15);
-            text-align: center;
-        }
-
-        h1 {
-            margin-top: 0;
-            font-size: 26px;
-        }
-
-        .contador {
-            font-size: 60px;
-            font-weight: bold;
-            margin: 15px 0;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 12px;
-            background: #dedede;
-            border-radius: 10px;
-            margin: 10px 0 20px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #4a57ff;
-            width: 0%;
-            border-radius: 10px;
-            transition: width 0.3s;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 12px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        /* Botões organizados */
-        .btn-add {
-            background: #ff6f61;
-            color: white;
-        }
-        .btn-add:hover {
-            background: #ff3b2e;
-        }
-
-        .btn-save {
-            background: #3cb371;
-            color: white;
-        }
-        .btn-save:hover {
-            background: #2e8b57;
-        }
-
-        .btn-reset {
-            background: white;
-            border: 2px solid #666;
-            color: #333;
-        }
-        .btn-reset:hover {
-            background: #f2f2f2;
-        }
-
-        /* Caixas de estatística */
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            gap: 10px;
-        }
-
-        .stat-box {
-            flex: 1;
-            background: white;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-
-        .motivacional {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #4a57ff;
-        }
-    </style>
-</head>
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
-class RegistrarTreinoPage extends StatefulWidget {
-  @override
-  _RegistrarTreinoPageState createState() => _RegistrarTreinoPageState();
-}
-
-class _RegistrarTreinoPageState extends State<RegistrarTreinoPage> {
-  DateTime dataSelecionada = DateTime.now(); // 🔥 por padrão: hoje
-
-  Future<void> _selecionarData() async {
-    DateTime? novaData = await showDatePicker(
-      context: context,
-      initialDate: dataSelecionada,      // começa no dia atual
-      firstDate: DateTime(2020),         // limite para retroativos
-      lastDate: DateTime.now(),          // impede datas futuras
-      locale: const Locale("pt", "BR"),
-    );
-
-    if (novaData != null) {
-      setState(() {
-        dataSelecionada = novaData;
-      });
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f2f6ff;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
     }
-  }
 
-  void _salvarTreino() {
-    // Aqui você salvaria no banco de dados
-    print("Treino salvo no dia: $dataSelecionada");
+    .container {
+        width: 380px;
+        background: white;
+        padding: 30px;
+        border-radius: 18px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        text-align: center;
+    }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Treino registrado com sucesso! 🎉")),
-    );
-  }
+    h1 { font-size: 26px; margin-bottom: 5px; }
 
-  @override
-  Widget build(BuildContext context) {
-    final String dataFormatada =
-        DateFormat("dd/MM/yyyy").format(dataSelecionada);
+    .contador {
+        font-size: 60px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Registrar Treino"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Selecione a data do treino:",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+    .progress-bar {
+        width: 100%;
+        height: 14px;
+        background: #dedede;
+        border-radius: 10px;
+        margin: 15px 0;
+    }
+    .progress-fill {
+        height: 100%;
+        background: #4a57ff;
+        border-radius: 10px;
+        transition: width 0.3s;
+        width: 0%;
+    }
 
-            SizedBox(height: 12),
+    button {
+        width: 100%;
+        padding: 15px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+    }
 
-            GestureDetector(
-              onTap: _selecionarData,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade400),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      dataFormatada,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    Icon(Icons.calendar_month, color: Colors.blueAccent)
-                  ],
-                ),
-              ),
-            ),
+    .btn-add    { background: #ff6f61; color: white; }
+    .btn-save   { background: #3cb371; color: white; }
+    .btn-reset  { background: #ffffff; border: 2px solid #555; }
 
-            SizedBox(height: 30),
+    .btn-add:hover   { background: #ff3b2e; }
+    .btn-save:hover  { background: #2e8b57; }
 
-            ElevatedButton(
-              onPressed: _salvarTreino,
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-              ),
-              child: Text("Salvar Treino"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+    .motivacional {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #4a57ff;
+    }
+
+    .historic-box {
+        text-align: left;
+        margin-top: 25px;
+        padding: 15px;
+        background: #fafafa;
+        border-radius: 10px;
+        max-height: 180px;
+        overflow-y: auto;
+        border: 1px solid #e3e3e3;
+    }
+
+    .registro-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .registro-item button {
+        width: auto;
+        padding: 5px 10px;
+        font-size: 12px;
+        border-radius: 6px;
+        background: #ff4f4f;
+        color: white;
+    }
+
+    .tema1 { background: linear-gradient(135deg,#ffecd2,#fcb69f); }
+    .tema2 { background: linear-gradient(135deg,#d9a7c7,#fffcdc); }
+    .tema3 { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
+    .tema4 { background: linear-gradient(135deg,#f6d365,#fda085); }
+    .tema5 { background: linear-gradient(135deg,#84fab0,#8fd3f4); }
+
+</style>
+</head>
 <body>
-    <div class="container">
-        <h1>Contador de Treinos</h1>
-        <p>sua jornada fitness</p>
 
-        <div class="contador" id="contador">0</div>
-        <p>de 200 dias de treino</p>
+<div class="container" id="appContainer">
 
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
+    <h1>Contador de Treinos</h1>
+    <p>Sua jornada fitness</p>
 
-        <div class="stats">
-            <div class="stat-box">
-                <div id="diasRestantes">200</div>
-                dias restantes
-            </div>
-            <div class="stat-box">
-                <div id="diasMeta">0</div>
-                dias até a meta
-            </div>
-        </div>
+    <div class="contador" id="contador">0</div>
+    <p>de 200 dias</p>
 
-        <button class="btn-add" onclick="adicionarTreino()">Dia de Treino</button>
-        <button class="btn-save" onclick="salvarRegistro()">Salvar Registro</button>
-        <button class="btn-reset" onclick="resetar()">Resetar Contador</button>
-
-        <div class="motivacional" id="motivacional">Vamos começar! 💪🔥</div>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
     </div>
 
-    <script>
-        const META = 200;
-        let historico = JSON.parse(localStorage.getItem('treinos')) || [];
-        let contador = Number(localStorage.getItem('contador')) || 0;
+    <button class="btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
+    <button class="btn-save" onclick="salvarRegistro()">Salvar Hoje</button>
+    <button class="btn-reset" onclick="resetar()">Resetar</button>
 
-        function atualizarTela() {
-            document.getElementById('contador').textContent = contador;
-            document.getElementById('diasRestantes').textContent = META - contador;
-            document.getElementById('diasMeta').textContent = contador;
+    <div class="motivacional" id="motivacional">Vamos começar! 💪🔥</div>
 
-            let progresso = (contador / META) * 100;
-            document.getElementById('progressFill').style.width = progresso + '%';
+    <div class="historic-box" id="historicoLista"></div>
 
-            atualizarMensagem(progresso);
-        }
+</div>
 
-        function atualizarMensagem(p) {
-            let msg = document.getElementById('motivacional');
+<!-- Modal para escolher data -->
+<div id="modal" style="
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+    <div style="
+        background:white; padding:20px; width:300px; border-radius:12px; text-align:center;">
+        
+        <h3>Data do Treino</h3>
+        <input type="date" id="dataTreino" style="padding:10px; width:100%;">
 
-            if (p === 0) msg.textContent = 'Vamos começar! 💪🔥';
-            else if (p < 10) msg.textContent = 'Cada passo conta! 🚀';
-            else if (p < 25) msg.textContent = 'O ritmo tá gostoso! Continua! 😎';
-            else if (p < 50) msg.textContent = 'Você tá voando! ✨';
-            else if (p < 75) msg.textContent = 'Metade da jornada concluída! 🔥';
-            else if (p < 100) msg.textContent = 'A linha de chegada tá logo ali! 🏁';
-            else msg.textContent = 'META BATIDA! Você é incrível! 🏆🔥';
-        }
+        <button style="margin-top:10px; background:#4a57ff; color:white; padding:10px; width:100%; border-radius:10px;"
+        onclick="registrarDataEscolhida()">Registrar</button>
 
-        function adicionarTreino() {
-            if (contador < META) {
-                contador++;
-                localStorage.setItem('contador', contador);
-                atualizarTela();
-            }
-        }
+        <button style="margin-top:10px; background:#aaa; padding:10px; width:100%; border-radius:10px;"
+        onclick="fecharModal()">Cancelar</button>
+    </div>
+</div>
 
-        function salvarRegistro() {
-            const hoje = new Date().toLocaleDateString('pt-BR');
-            historico.push({ data: hoje, total: contador });
-            localStorage.setItem('treinos', JSON.stringify(historico));
-            alert('Registro salvo com sucesso! 🎉🔥');
-        }
+<script>
+    const META = 200;
+    let contador = 0;
+    let historico = JSON.parse(localStorage.getItem("treinos")) || [];
 
-        function resetar() {
-            contador = 0;
-            localStorage.setItem('contador', contador);
-            atualizarTela();
-        }
+    function atualizarTema() {
+        const temas = ["tema1","tema2","tema3","tema4","tema5"];
+        let index = Math.floor(contador / 30) % temas.length;
 
+        let container = document.getElementById("appContainer");
+        container.className = "container " + temas[index];
+    }
+
+    function atualizarTela() {
+        document.getElementById("contador").textContent = contador;
+        document.getElementById("progressFill").style.width = (contador / META * 100) + "%";
+        atualizarMensagem(contador / META * 100);
+        atualizarTema();
+        carregarLista();
+    }
+
+    function atualizarMensagem(p) {
+        let msg = document.getElementById("motivacional");
+        if (p === 0) msg.textContent = "Vamos começar! 💪🔥";
+        else if (p < 10) msg.textContent = "Cada passo conta! 🚀";
+        else if (p < 25) msg.textContent = "Tá pegando ritmo! 😎";
+        else if (p < 50) msg.textContent = "Você tá voando! ✨";
+        else if (p < 75) msg.textContent = "Metade concluída! 🔥";
+        else if (p < 100) msg.textContent = "Falta pouco! 🏁";
+        else msg.textContent = "META BATIDA! Você é incrível! 🏆🔥";
+    }
+
+    function salvarRegistro() {
+        const hoje = new Date().toISOString().slice(0,10);
+        historico.push({data: hoje});
+        contador++;
+        salvar();
+    }
+
+    function abrirRegistroData() {
+        document.getElementById("modal").style.display = "flex";
+        document.getElementById("dataTreino").value = new Date().toISOString().slice(0,10);
+    }
+
+    function registrarDataEscolhida() {
+        let d = document.getElementById("dataTreino").value;
+        if (!d) return;
+
+        historico.push({data: d});
+        contador++;
+        salvar();
+        fecharModal();
+    }
+
+    function fecharModal() {
+        document.getElementById("modal").style.display = "none";
+    }
+
+    function salvar() {
+        localStorage.setItem("treinos", JSON.stringify(historico));
         atualizarTela();
-    </script>
+    }
+
+    function carregarLista() {
+        let lista = document.getElementById("historicoLista");
+        lista.innerHTML = "";
+
+        historico.forEach((r, i) => {
+            lista.innerHTML += `
+                <div class="registro-item">
+                    ${r.data}
+                    <button onclick="apagar(${i})">Excluir</button>
+                </div>
+            `;
+        });
+    }
+
+    function apagar(i) {
+        historico.splice(i, 1);
+        contador--;
+        salvar();
+    }
+
+    function resetar() {
+        if (!confirm("Deseja zerar tudo?")) return;
+        historico = [];
+        contador = 0;
+        salvar();
+    }
+
+    atualizarTela();
+</script>
+
 </body>
 </html>
