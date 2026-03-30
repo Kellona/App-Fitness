@@ -29,7 +29,31 @@
     }
 
     h1 { font-size: 26px; margin-bottom: 5px; }
+    h2 { margin-top: 20px; }
 
+    /* TABS / NAVEGAÇÃO */
+    .menu {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    .menu button {
+        flex: 1;
+        margin: 0 5px;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        background: #4a57ff;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .menu .ativo {
+        background: #ff6f61;
+    }
+
+    /* PÁGINA 1 – CONTADOR */
     .contador {
         font-size: 60px;
         font-weight: bold;
@@ -100,6 +124,21 @@
         color: white;
     }
 
+    /* ABA TREINOS */
+    .treino-card {
+        background: #fafafa;
+        padding: 12px;
+        margin-bottom: 14px;
+        border-radius: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+    .treino-card h3 {
+        margin: 0 0 8px;
+        color: #ff6f61;
+    }
+    ul { padding-left: 18px; }
+
     /* Temas dinâmicos */
     .tema1 { background: linear-gradient(135deg,#ffecd2,#fcb69f); }
     .tema2 { background: linear-gradient(135deg,#d9a7c7,#fffcdc); }
@@ -113,31 +152,118 @@
 
 <div class="container" id="appContainer">
 
-    <h1>Contador de Treinos</h1>
-    <p>Sua jornada fitness</p>
-
-    <div class="contador" id="contador">0</div>
-    <div class="faltam" id="faltamDias"></div>
-
-    <p>de 200 dias</p>
-
-    <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
+    <!-- MENU SUPERIOR -->
+    <div class="menu">
+        <button id="btnContador" class="ativo" onclick="mostrarPagina('paginaContador')">Contador</button>
+        <button id="btnTreinos" onclick="mostrarPagina('paginaTreinos')">Treinos</button>
     </div>
 
-    <button class="btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
-    <button class="btn-save" onclick="salvarRegistro()">Salvar Hoje</button>
-    <button class="btn-reset" onclick="resetar()">Resetar</button>
+    <!-- PÁGINA 1: CONTADOR -->
+    <div id="paginaContador">
 
-    <div class="historic-box" id="historicoLista"></div>
+        <h1>Contador de Treinos</h1>
+        <p>Sua jornada fitness</p>
 
-    <br><br>
-    <h2>Gráfico Mensal</h2>
-    <canvas id="graficoMensal" width="350" height="200"></canvas>
+        <div class="contador" id="contador">0</div>
+        <div class="faltam" id="faltamDias"></div>
+        <p>de 200 dias</p>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <button class="btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
+        <button class="btn-save" onclick="salvarRegistro()">Salvar Hoje</button>
+        <button class="btn-reset" onclick="resetar()">Resetar</button>
+
+        <div class="historic-box" id="historicoLista"></div>
+
+        <br><br>
+        <h2>Gráfico Mensal</h2>
+        <canvas id="graficoMensal" width="350" height="200"></canvas>
+    </div>
+
+    <!-- PÁGINA 2: TREINOS -->
+    <div id="paginaTreinos" style="display:none; text-align:left;">
+
+        <h1>Treinos da Semana</h1>
+
+        <div class="treino-card">
+            <h3>Todos os dias – 15min Esteira</h3>
+        </div>
+
+        <div class="treino-card">
+            <h3>Segunda — Glúteos + Pernas Leves</h3>
+            <ul>
+                <li>Agachamento livre – 3×12</li>
+                <li>Cadeira abdutora – 3×15</li>
+                <li>Mesa flexora – 3×12</li>
+                <li>Cadeira extensora – 2×12</li>
+                <li>Elevação pélvica – 3×12</li>
+                <li>Panturrilha – 2×15</li>
+            </ul>
+        </div>
+
+        <div class="treino-card">
+            <h3>Terça — Braços + Costas + Abdômen</h3>
+            <ul>
+                <li>Puxada na frente – 3×12</li>
+                <li>Remada baixa – 3×12</li>
+                <li>Supino máquina – 3×12</li>
+                <li>Tríceps corda – 3×12</li>
+                <li>Rosca polia – 2×12</li>
+                <li>Abdômen infra – 2×15</li>
+            </ul>
+        </div>
+
+        <div class="treino-card">
+            <h3>Quarta — Glúteos + Posterior</h3>
+            <ul>
+                <li>Elevação pélvica – 3×12</li>
+                <li>Stiff leve – 3×12</li>
+                <li>Abdutora lenta – 3×15</li>
+                <li>Passada – 2×12</li>
+                <li>Glúteo máquina – 3×10</li>
+            </ul>
+        </div>
+
+        <div class="treino-card">
+            <h3>Quinta — Ombro + Peito + Core</h3>
+            <ul>
+                <li>Desenvolvimento – 3×12</li>
+                <li>Elevação lateral – 3×12</li>
+                <li>Peitoral máquina – 2×12</li>
+                <li>Remada alta – 2×12</li>
+                <li>Prancha – 2×30–40s</li>
+            </ul>
+        </div>
+
+        <div class="treino-card">
+            <h3>Sexta — Pernas + Full Body Leve</h3>
+            <ul>
+                <li>Agachamento com halter – 3×12</li>
+                <li>Cadeira flexora – 3×12</li>
+                <li>Remada – 2×12</li>
+                <li>Tríceps corda – 2×12</li>
+                <li>Abdominais – 2×12</li>
+            </ul>
+        </div>
+
+        <div class="treino-card">
+            <h3>Dicas</h3>
+            <ul>
+                <li>Treinar em jejum é seguro para treinos leves</li>
+                <li>Evitar cargas altas</li>
+                <li>Hidratação ao acordar</li>
+                <li>Pós-treino com proteína + carbo</li>
+            </ul>
+        </div>
+
+    </div>
 
 </div>
 
-<!-- Modal -->
+<!-- MODAL -->
 <div id="modal" style="
     display:none; position:fixed; top:0; left:0; width:100%; height:100%;
     background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
@@ -156,123 +282,140 @@
 </div>
 
 <script>
-    const META = 200;
-    let contador = 0;
-    let historico = JSON.parse(localStorage.getItem("treinos")) || [];
+/* ---------- CONTADOR ---------- */
 
-    let grafico;
+const META = 200;
+let historico = JSON.parse(localStorage.getItem("treinos")) || [];
+let contador = historico.length;
+let grafico;
 
-    function atualizarTema() {
-        const temas = ["tema1","tema2","tema3","tema4","tema5"];
-        let index = Math.floor(contador / 30) % temas.length;
-        document.getElementById("appContainer").className = "container " + temas[index];
-    }
+function atualizarTema() {
+    const temas = ["tema1","tema2","tema3","tema4","tema5"];
+    let index = Math.floor(contador / 30) % temas.length;
+    document.getElementById("appContainer").className = "container " + temas[index];
+}
 
-    function diasFaltando() {
-        return META - contador;
-    }
+function diasFaltando() {
+    return META - contador;
+}
 
-    function atualizarTela() {
-        document.getElementById("contador").textContent = contador;
-        document.getElementById("faltamDias").textContent =
-            diasFaltando() > 0 ? `Faltam ${diasFaltando()} dias para a meta` : "Meta alcançada! 🎉🔥";
+function atualizarTela() {
+    document.getElementById("contador").textContent = contador;
+    document.getElementById("faltamDias").textContent =
+        diasFaltando() > 0 ? `Faltam ${diasFaltando()} dias para a meta` : "Meta alcançada! 🎉🔥";
 
-        document.getElementById("progressFill").style.width =
-            (contador / META * 100) + "%";
+    document.getElementById("progressFill").style.width =
+        (contador / META * 100) + "%";
 
-        atualizarTema();
-        carregarLista();
-        atualizarGrafico();
-    }
+    atualizarTema();
+    carregarLista();
+    atualizarGrafico();
+}
 
-    function salvarRegistro() {
-        const hoje = new Date().toISOString().slice(0,10);
-        historico.push({data: hoje});
-        contador++;
-        salvar();
-    }
+function salvarRegistro() {
+    const hoje = new Date().toISOString().slice(0,10);
+    historico.push({data: hoje});
+    contador++;
+    salvar();
+}
 
-    function abrirRegistroData() {
-        document.getElementById("modal").style.display = "flex";
-        document.getElementById("dataTreino").value = new Date().toISOString().slice(0,10);
-    }
+function abrirRegistroData() {
+    document.getElementById("modal").style.display = "flex";
+    document.getElementById("dataTreino").value = new Date().toISOString().slice(0,10);
+}
 
-    function registrarDataEscolhida() {
-        let d = document.getElementById("dataTreino").value;
-        if (!d) return;
-        historico.push({data: d});
-        contador++;
-        salvar();
-        fecharModal();
-    }
+function registrarDataEscolhida() {
+    let d = document.getElementById("dataTreino").value;
+    if (!d) return;
+    historico.push({data: d});
+    contador++;
+    salvar();
+    fecharModal();
+}
 
-    function fecharModal() {
-        document.getElementById("modal").style.display = "none";
-    }
+function fecharModal() {
+    document.getElementById("modal").style.display = "none";
+}
 
-    function salvar() {
-        localStorage.setItem("treinos", JSON.stringify(historico));
-        atualizarTela();
-    }
-
-    function carregarLista() {
-        let lista = document.getElementById("historicoLista");
-        lista.innerHTML = "";
-
-        historico.forEach((r, i) => {
-            lista.innerHTML += `
-                <div class="registro-item">
-                    ${r.data}
-                    <button onclick="apagar(${i})">Excluir</button>
-                </div>
-            `;
-        });
-    }
-
-    function apagar(i) {
-        historico.splice(i, 1);
-        contador--;
-        salvar();
-    }
-
-    function resetar() {
-        if (!confirm("Deseja zerar tudo?")) return;
-        historico = [];
-        contador = 0;
-        salvar();
-    }
-
-    function atualizarGrafico() {
-        const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-        let dados = new Array(12).fill(0);
-
-        historico.forEach(r => {
-            let mes = new Date(r.data).getMonth();
-            dados[mes]++;
-        });
-
-        if (grafico) grafico.destroy();
-
-        grafico = new Chart(document.getElementById("graficoMensal"), {
-            type: "bar",
-            data: {
-                labels: meses,
-                datasets: [{
-                    label: "Treinos no mês",
-                    data: dados
-                }]
-            },
-            options: {
-                responsive: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    contador = historico.length;
+function salvar() {
+    localStorage.setItem("treinos", JSON.stringify(historico));
     atualizarTela();
+}
+
+function carregarLista() {
+    let lista = document.getElementById("historicoLista");
+    lista.innerHTML = "";
+
+    historico.forEach((r, i) => {
+        lista.innerHTML += `
+            <div class="registro-item">
+                ${r.data}
+                <button onclick="apagar(${i})">Excluir</button>
+            </div>
+        `;
+    });
+}
+
+function apagar(i) {
+    historico.splice(i, 1);
+    contador--;
+    salvar();
+}
+
+function resetar() {
+    if (!confirm("Deseja zerar tudo?")) return;
+    historico = [];
+    contador = 0;
+    salvar();
+}
+
+/* ---------- GRÁFICO ---------- */
+
+function atualizarGrafico() {
+    const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+    let dados = new Array(12).fill(0);
+
+    historico.forEach(r => {
+        let mes = new Date(r.data).getMonth();
+        dados[mes]++;
+    });
+
+    if (grafico) grafico.destroy();
+
+    grafico = new Chart(document.getElementById("graficoMensal"), {
+        type: "bar",
+        data: {
+            labels: meses,
+            datasets: [{
+                label: "Treinos no mês",
+                data: dados
+            }]
+        },
+        options: {
+            responsive: false,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+/* ---------- NAVEGAÇÃO ENTRE PÁGINAS ---------- */
+
+function mostrarPagina(id) {
+    document.getElementById("paginaContador").style.display = "none";
+    document.getElementById("paginaTreinos").style.display = "none";
+
+    document.getElementById("btnContador").classList.remove("ativo");
+    document.getElementById("btnTreinos").classList.remove("ativo");
+
+    document.getElementById(id).style.display = "block";
+    if (id === "paginaContador") document.getElementById("btnContador").classList.add("ativo");
+    else document.getElementById("btnTreinos").classList.add("ativo");
+}
+
+/* ---------- INICIALIZAÇÃO ---------- */
+atualizarTela();
 </script>
 
 </body>
