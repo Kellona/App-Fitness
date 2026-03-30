@@ -2,6 +2,32 @@
     const META = 200;
     let historico = JSON.parse(localStorage.getItem('treinos')) || [];
     let contador = Number(localStorage.getItem('contador')) || 0;
+/* -------------------------
+      CONFIGURAÇÕES GERAIS
+---------------------------*/
+
+const META = 200;
+let contador = 0;
+let historico = [];
+let notas = [];
+
+/* ----------- TROCAR TELAS ----------- */
+function trocarTela(id) {
+    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
+    document.getElementById(id).classList.add("ativa");
+}
+
+/* ----------- ATUALIZAR CONTADOR ----------- */
+function atualizarTela() {
+    document.getElementById("contador").textContent = contador;
+    document.getElementById("diasRestantes").textContent = META - contador;
+    document.getElementById("diasMeta").textContent = contador;
+
+    let progresso = (contador / META) * 100;
+    document.getElementById("progressFill").style.width = progresso + "%";
+
+    atualizarMensagem(progresso);
+}
 
     function atualizarTema() {
         const tema = Math.floor(contador / 30);
@@ -72,7 +98,112 @@
         else if (p < 100) msg.textContent = 'A linha de chegada tá logo ali! 🏁';
         else msg.textContent = 'META BATIDA! Você é incrível! 🏆🔥';
     }
+/* ----------- ABRIR MODAL DE DATA ----------- */
+function adicionarTreino() {
+    document.getElementById("modalData").style.display = "flex";
+    document.getElementById("inputDataTreino").valueAsDate = new Date();
+}
 
+function fecharModal() {
+    document.getElementById("modalData").style.display = "none";
+}
+
+/* ----------- CONFIRMAR REGISTRO ----------- */
+function confirmarRegistro() {
+    let data = document.getElementById("inputDataTreino").value;
+
+    if (!data) {
+        alert("Selecione uma data válida!");
+        return;
+    }
+
+    salvarRegistro(data);
+    fecharModal();
+}
+
+/* ----------- SALVAR REGISTRO NO BANCO ----------- */
+function salvarRegistro(dataTreino) {
+    const tx = db.transaction("historico", "readwrite");
+    tx.objectStore("historico").add({
+        data: dataTreino.split("-").reverse().join("/"),
+        id: Date.now()
+    });
+
+    tx.oncomplete = () => carregarHistorico();
+
+    contador++;
+    atualizarTela();
+}
+
+/* ----------- EXCLUIR REGISTRO ----------- */
+function excluirRegistro(id) {
+    const tx = db.transaction("historico", "readwrite");
+    tx.objectStore("historico").delete(id);
+
+    tx.oncomplete = () => {
+        contador--;
+        if (contador < 0) contador = 0;
+        atualizarTela();
+        carregarHistorico();
+    };
+}
+
+/* ----------- CARREGAR HISTÓRICO ----------- */
+function carregarHistorico() {
+    const lista = document.getElementById("listaHistorico");
+    lista.innerHTML = "";
+
+    const tx = db.transaction("historico", "readonly");
+    tx.objectStore("historico").getAll().onsuccess = function (e) {
+        historico = e.target.result;
+
+        historico.forEach(item => {
+            lista.innerHTML += `
+                <li>
+                    📅 ${item.data}
+                    <button class="btn-reset" onclick="excluirRegistro(${item.id})">
+                        Excluir
+                    </button>
+                </li>`;
+        });
+    };
+}
+
+/* ----------- NOTAS ----------- */
+function salvarNota() {
+    const texto = document.getElementById("campoNota").value;
+    if (texto.trim() === "") return;
+
+    const tx = db.transaction("notas", "readwrite");
+    tx.objectStore("notas").add({ texto });
+
+    tx.oncomplete = () => carregarNotas();
+
+    document.getElementById("campoNota").value = "";
+}
+
+function carregarNotas() {
+    const lista = document.getElementById("listaNotas");
+    lista.innerHTML = "";
+
+    const tx = db.transaction("notas", "readonly");
+    tx.objectStore("notas").getAll().onsuccess = function (e) {
+        notas = e.target.result;
+
+        notas.forEach(item => {
+            lista.innerHTML += `<li>📝 ${item.texto}</li>`;
+        });
+    };
+}
+
+/* ----------- RESET ----------- */
+function resetar() {
+    contador = 0;
+    atualizarTela();
+}
+
+/* ----------- INICIAR APP ----------- */
+atualizarTela();
     function adicionarTreino() {
         if (contador < META) {
             contador++;
