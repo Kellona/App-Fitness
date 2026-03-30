@@ -140,10 +140,7 @@
     <h3>Histórico 📅</h3>
     <div class="historic-box" id="historicoLista"></div>
 
-    <h3>Notas dos Treinos 📝</h3>
-    <div class="notes-box" id="notasLista"></div>
-
-    <h3>Gráfico Mensal 📊</h3>
+      <h3>Gráfico Mensal 📊</h3>
     <canvas id="grafico" height="150"></canvas>
 
 </div>
@@ -194,8 +191,7 @@
         atualizarTema();
         atualizarMensagem(contador / META * 100);
         carregarLista();
-        carregarNotas();
-        atualizarGrafico();
+          atualizarGrafico();
     }
 
     function atualizarMensagem(p) {
@@ -257,9 +253,7 @@
         });
     }
 
-    function carregarNotas() {
-        let lista = document.getElementById("notasLista");
-        lista.innerHTML = "";
+    function 
 
         historico.forEach(r => {
             if (r.nota && r.nota.trim() !== "") {
