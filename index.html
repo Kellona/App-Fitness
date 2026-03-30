@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Contador de Treinos</title>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -27,11 +29,19 @@
     }
 
     h1 { font-size: 26px; margin-bottom: 5px; }
+    h3 { margin-top: 25px; }
 
     .contador {
         font-size: 60px;
         font-weight: bold;
         margin: 10px 0;
+    }
+
+    .dias-meta {
+        font-size: 16px;
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #4a57ff;
     }
 
     .progress-bar {
@@ -64,9 +74,6 @@
     .btn-save   { background: #3cb371; color: white; }
     .btn-reset  { background: #ffffff; border: 2px solid #555; }
 
-    .btn-add:hover   { background: #ff3b2e; }
-    .btn-save:hover  { background: #2e8b57; }
-
     .motivacional {
         margin-top: 20px;
         font-size: 18px;
@@ -74,7 +81,7 @@
         color: #4a57ff;
     }
 
-    .historic-box {
+    .historic-box, .notes-box {
         text-align: left;
         margin-top: 25px;
         padding: 15px;
@@ -101,6 +108,7 @@
         color: white;
     }
 
+    /* Temas dinâmicos */
     .tema1 { background: linear-gradient(135deg,#ffecd2,#fcb69f); }
     .tema2 { background: linear-gradient(135deg,#d9a7c7,#fffcdc); }
     .tema3 { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
@@ -117,7 +125,7 @@
     <p>Sua jornada fitness</p>
 
     <div class="contador" id="contador">0</div>
-    <p>de 200 dias</p>
+    <div class="dias-meta" id="diasRestantes"></div>
 
     <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
@@ -129,11 +137,18 @@
 
     <div class="motivacional" id="motivacional">Vamos começar! 💪🔥</div>
 
+    <h3>Histórico 📅</h3>
     <div class="historic-box" id="historicoLista"></div>
+
+    <h3>Notas dos Treinos 📝</h3>
+    <div class="notes-box" id="notasLista"></div>
+
+    <h3>Gráfico Mensal 📊</h3>
+    <canvas id="grafico" height="150"></canvas>
 
 </div>
 
-<!-- Modal para escolher data -->
+<!-- Modal -->
 <div id="modal" style="
     display:none; position:fixed; top:0; left:0; width:100%; height:100%;
     background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
@@ -142,6 +157,9 @@
         
         <h3>Data do Treino</h3>
         <input type="date" id="dataTreino" style="padding:10px; width:100%;">
+
+        <textarea id="notaTreino" placeholder="Escreva uma nota do treino..."
+        style="width:100%; height:80px; margin-top:10px; border-radius:8px; padding:8px;"></textarea>
 
         <button style="margin-top:10px; background:#4a57ff; color:white; padding:10px; width:100%; border-radius:10px;"
         onclick="registrarDataEscolhida()">Registrar</button>
@@ -156,20 +174,28 @@
     let contador = 0;
     let historico = JSON.parse(localStorage.getItem("treinos")) || [];
 
+    let chart;
+
     function atualizarTema() {
         const temas = ["tema1","tema2","tema3","tema4","tema5"];
         let index = Math.floor(contador / 30) % temas.length;
-
-        let container = document.getElementById("appContainer");
-        container.className = "container " + temas[index];
+        document.getElementById("appContainer").className = "container " + temas[index];
     }
 
     function atualizarTela() {
+        contador = historico.length;
+
         document.getElementById("contador").textContent = contador;
+        document.getElementById("diasRestantes").textContent = 
+            (META - contador) + " dias para bater a meta";
+
         document.getElementById("progressFill").style.width = (contador / META * 100) + "%";
-        atualizarMensagem(contador / META * 100);
+
         atualizarTema();
+        atualizarMensagem(contador / META * 100);
         carregarLista();
+        carregarNotas();
+        atualizarGrafico();
     }
 
     function atualizarMensagem(p) {
@@ -185,22 +211,23 @@
 
     function salvarRegistro() {
         const hoje = new Date().toISOString().slice(0,10);
-        historico.push({data: hoje});
-        contador++;
+        historico.push({data: hoje, nota: ""});
         salvar();
     }
 
     function abrirRegistroData() {
         document.getElementById("modal").style.display = "flex";
         document.getElementById("dataTreino").value = new Date().toISOString().slice(0,10);
+        document.getElementById("notaTreino").value = "";
     }
 
     function registrarDataEscolhida() {
         let d = document.getElementById("dataTreino").value;
+        let n = document.getElementById("notaTreino").value;
+
         if (!d) return;
 
-        historico.push({data: d});
-        contador++;
+        historico.push({data: d, nota: n});
         salvar();
         fecharModal();
     }
@@ -221,24 +248,63 @@
         historico.forEach((r, i) => {
             lista.innerHTML += `
                 <div class="registro-item">
-                    ${r.data}
+                    <div>
+                      📅 ${r.data}
+                    </div>
                     <button onclick="apagar(${i})">Excluir</button>
                 </div>
             `;
         });
     }
 
+    function carregarNotas() {
+        let lista = document.getElementById("notasLista");
+        lista.innerHTML = "";
+
+        historico.forEach(r => {
+            if (r.nota && r.nota.trim() !== "") {
+                lista.innerHTML += `<p><b>${r.data}:</b> ${r.nota}</p>`;
+            }
+        });
+    }
+
     function apagar(i) {
         historico.splice(i, 1);
-        contador--;
         salvar();
     }
 
     function resetar() {
-        if (!confirm("Deseja zerar tudo?")) return;
+        if (!confirm("Deseja realmente zerar tudo?")) return;
         historico = [];
-        contador = 0;
         salvar();
+    }
+
+    function atualizarGrafico() {
+        const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+        let dados = new Array(12).fill(0);
+
+        historico.forEach(item => {
+            let mes = new Date(item.data).getMonth();
+            dados[mes]++;
+        });
+
+        if (chart) chart.destroy();
+
+        chart = new Chart(document.getElementById("grafico"), {
+            type: "bar",
+            data: {
+                labels: meses,
+                datasets: [{
+                    label: "Dias de treino por mês",
+                    data: dados,
+                    backgroundColor: "#4a57ff"
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
     }
 
     atualizarTela();
