@@ -12,10 +12,10 @@
         font-family: Arial, sans-serif;
         background: #f2f6ff;
         margin: 0;
-        padding: 0;
+        padding: 20px 0;
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start;
         min-height: 100vh;
     }
 
@@ -29,7 +29,6 @@
     }
 
     h1 { font-size: 26px; margin-bottom: 5px; }
-    h3 { margin-top: 25px; }
 
     .contador {
         font-size: 60px;
@@ -37,11 +36,11 @@
         margin: 10px 0;
     }
 
-    .dias-meta {
-        font-size: 16px;
+    .faltam {
+        font-size: 18px;
         margin-bottom: 10px;
+        color: #333;
         font-weight: bold;
-        color: #4a57ff;
     }
 
     .progress-bar {
@@ -74,14 +73,7 @@
     .btn-save   { background: #3cb371; color: white; }
     .btn-reset  { background: #ffffff; border: 2px solid #555; }
 
-    .motivacional {
-        margin-top: 20px;
-        font-size: 18px;
-        font-weight: bold;
-        color: #4a57ff;
-    }
-
-    .historic-box, .notes-box {
+    .historic-box {
         text-align: left;
         margin-top: 25px;
         padding: 15px;
@@ -125,7 +117,9 @@
     <p>Sua jornada fitness</p>
 
     <div class="contador" id="contador">0</div>
-    <div class="dias-meta" id="diasRestantes"></div>
+    <div class="faltam" id="faltamDias"></div>
+
+    <p>de 200 dias</p>
 
     <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
@@ -135,16 +129,11 @@
     <button class="btn-save" onclick="salvarRegistro()">Salvar Hoje</button>
     <button class="btn-reset" onclick="resetar()">Resetar</button>
 
-    <div class="motivacional" id="motivacional">Vamos começar! 💪🔥</div>
-
-    <h3>Histórico 📅</h3>
     <div class="historic-box" id="historicoLista"></div>
 
-    <h3>Notas dos Treinos 📝</h3>
-    <div class="notes-box" id="notasLista"></div>
-
-    <h3>Gráfico Mensal 📊</h3>
-    <canvas id="grafico" height="150"></canvas>
+    <br><br>
+    <h2>Gráfico Mensal</h2>
+    <canvas id="graficoMensal" width="350" height="200"></canvas>
 
 </div>
 
@@ -157,9 +146,6 @@
         
         <h3>Data do Treino</h3>
         <input type="date" id="dataTreino" style="padding:10px; width:100%;">
-
-        <textarea id="notaTreino" placeholder="Escreva uma nota do treino..."
-        style="width:100%; height:80px; margin-top:10px; border-radius:8px; padding:8px;"></textarea>
 
         <button style="margin-top:10px; background:#4a57ff; color:white; padding:10px; width:100%; border-radius:10px;"
         onclick="registrarDataEscolhida()">Registrar</button>
@@ -174,7 +160,7 @@
     let contador = 0;
     let historico = JSON.parse(localStorage.getItem("treinos")) || [];
 
-    let chart;
+    let grafico;
 
     function atualizarTema() {
         const temas = ["tema1","tema2","tema3","tema4","tema5"];
@@ -182,52 +168,40 @@
         document.getElementById("appContainer").className = "container " + temas[index];
     }
 
-    function atualizarTela() {
-        contador = historico.length;
-
-        document.getElementById("contador").textContent = contador;
-        document.getElementById("diasRestantes").textContent = 
-            (META - contador) + " dias para bater a meta";
-
-        document.getElementById("progressFill").style.width = (contador / META * 100) + "%";
-
-        atualizarTema();
-        atualizarMensagem(contador / META * 100);
-        carregarLista();
-        carregarNotas();
-        atualizarGrafico();
+    function diasFaltando() {
+        return META - contador;
     }
 
-    function atualizarMensagem(p) {
-        let msg = document.getElementById("motivacional");
-        if (p === 0) msg.textContent = "Vamos começar! 💪🔥";
-        else if (p < 10) msg.textContent = "Cada passo conta! 🚀";
-        else if (p < 25) msg.textContent = "Tá pegando ritmo! 😎";
-        else if (p < 50) msg.textContent = "Você tá voando! ✨";
-        else if (p < 75) msg.textContent = "Metade concluída! 🔥";
-        else if (p < 100) msg.textContent = "Falta pouco! 🏁";
-        else msg.textContent = "META BATIDA! Você é incrível! 🏆🔥";
+    function atualizarTela() {
+        document.getElementById("contador").textContent = contador;
+        document.getElementById("faltamDias").textContent =
+            diasFaltando() > 0 ? `Faltam ${diasFaltando()} dias para a meta` : "Meta alcançada! 🎉🔥";
+
+        document.getElementById("progressFill").style.width =
+            (contador / META * 100) + "%";
+
+        atualizarTema();
+        carregarLista();
+        atualizarGrafico();
     }
 
     function salvarRegistro() {
         const hoje = new Date().toISOString().slice(0,10);
-        historico.push({data: hoje, nota: ""});
+        historico.push({data: hoje});
+        contador++;
         salvar();
     }
 
     function abrirRegistroData() {
         document.getElementById("modal").style.display = "flex";
         document.getElementById("dataTreino").value = new Date().toISOString().slice(0,10);
-        document.getElementById("notaTreino").value = "";
     }
 
     function registrarDataEscolhida() {
         let d = document.getElementById("dataTreino").value;
-        let n = document.getElementById("notaTreino").value;
-
         if (!d) return;
-
-        historico.push({data: d, nota: n});
+        historico.push({data: d});
+        contador++;
         salvar();
         fecharModal();
     }
@@ -248,34 +222,23 @@
         historico.forEach((r, i) => {
             lista.innerHTML += `
                 <div class="registro-item">
-                    <div>
-                      📅 ${r.data}
-                    </div>
+                    ${r.data}
                     <button onclick="apagar(${i})">Excluir</button>
                 </div>
             `;
         });
     }
 
-    function carregarNotas() {
-        let lista = document.getElementById("notasLista");
-        lista.innerHTML = "";
-
-        historico.forEach(r => {
-            if (r.nota && r.nota.trim() !== "") {
-                lista.innerHTML += `<p><b>${r.data}:</b> ${r.nota}</p>`;
-            }
-        });
-    }
-
     function apagar(i) {
         historico.splice(i, 1);
+        contador--;
         salvar();
     }
 
     function resetar() {
-        if (!confirm("Deseja realmente zerar tudo?")) return;
+        if (!confirm("Deseja zerar tudo?")) return;
         historico = [];
+        contador = 0;
         salvar();
     }
 
@@ -283,30 +246,32 @@
         const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
         let dados = new Array(12).fill(0);
 
-        historico.forEach(item => {
-            let mes = new Date(item.data).getMonth();
+        historico.forEach(r => {
+            let mes = new Date(r.data).getMonth();
             dados[mes]++;
         });
 
-        if (chart) chart.destroy();
+        if (grafico) grafico.destroy();
 
-        chart = new Chart(document.getElementById("grafico"), {
+        grafico = new Chart(document.getElementById("graficoMensal"), {
             type: "bar",
             data: {
                 labels: meses,
                 datasets: [{
-                    label: "Dias de treino por mês",
-                    data: dados,
-                    backgroundColor: "#4a57ff"
+                    label: "Treinos no mês",
+                    data: dados
                 }]
             },
             options: {
-                responsive: true,
-                scales: { y: { beginAtZero: true } }
+                responsive: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
             }
         });
     }
 
+    contador = historico.length;
     atualizarTela();
 </script>
 
