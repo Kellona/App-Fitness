@@ -1,267 +1,174 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Desafio 200 Dias</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Desafio 200 Dias PRO</title>
 
-  <style>
-    :root {
-      --primary: #6C63FF;
-      --secondary: #00C9A7;
-      --accent: #FF6584;
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #ffffff;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    header {
-      text-align: center;
-      padding: 15px;
-      font-size: 22px;
-      background: linear-gradient(45deg, var(--primary), var(--secondary));
-    }
-
-    .container {
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-    }
-
-    .card {
-      background: var(--card);
-      padding: 20px;
-      border-radius: 15px;
-      margin-bottom: 20px;
-    }
-
-    .big {
-      font-size: 60px;
-      text-align: center;
-    }
-
-    .progress {
-      height: 20px;
-      background: #333;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
-
-    .bar {
-      height: 100%;
-      background: linear-gradient(90deg, var(--secondary), var(--accent));
-      width: 0%;
-    }
-
-    button {
-      padding: 10px 15px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      margin: 5px;
-    }
-
-    .primary { background: var(--primary); color: white; }
-    .danger { background: var(--accent); color: white; }
-
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: none;
-    }
-
-    .nav {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 20px;
-    }
-
-    .hidden { display: none; }
-
-    ul { list-style: none; padding: 0; }
-
-    li {
-      background: #334155;
-      margin: 5px 0;
-      padding: 10px;
-      border-radius: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-  </style>
+<style>
+:root{
+  --primary:#6C63FF;
+  --secondary:#00C9A7;
+  --accent:#FF6584;
+}
+body{
+  font-family: Arial, sans-serif;
+  margin:0;
+  background:#0f172a;
+  color:white;
+  display:flex;
+  justify-content:center;
+}
+.container{
+  width:380px;
+  padding:25px;
+  border-radius:18px;
+  margin:20px;
+  text-align:center;
+  background:#1e293b;
+}
+h1{margin:5px 0}
+.contador{font-size:60px;font-weight:bold}
+.progress-bar{height:14px;background:#333;border-radius:10px;margin:15px 0}
+.progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--secondary),var(--accent));width:0%}
+button{width:100%;padding:14px;margin-top:10px;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
+.btn-add{background:#ff6f61;color:white}
+.btn-save{background:#3cb371;color:white}
+.btn-reset{background:white;color:black}
+.motivacional{margin-top:15px;font-weight:bold}
+.historic-box{margin-top:20px;max-height:180px;overflow:auto;background:#0f172a;padding:10px;border-radius:10px}
+.registro-item{display:flex;justify-content:space-between;margin:5px 0;background:#334155;padding:8px;border-radius:8px}
+.registro-item button{width:auto;padding:5px;font-size:12px;background:red;color:white}
+.tema1{background:linear-gradient(135deg,#ffecd2,#fcb69f)}
+.tema2{background:linear-gradient(135deg,#d9a7c7,#fffcdc)}
+.tema3{background:linear-gradient(135deg,#a1c4fd,#c2e9fb)}
+.tema4{background:linear-gradient(135deg,#f6d365,#fda085)}
+.tema5{background:linear-gradient(135deg,#84fab0,#8fd3f4)}
+</style>
 </head>
 <body>
 
-<header>🔥 Desafio 200 Dias 🔥</header>
+<div class="container" id="appContainer">
+<h1>🔥 200 Dias 🔥</h1>
+<div class="contador" id="contador">0</div>
+<p>de 200 dias</p>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
-<div class="container">
+<button class="btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
+<button class="btn-save" onclick="salvarHoje()">Salvar Hoje</button>
+<button class="btn-reset" onclick="resetar()">Resetar</button>
 
-  <div id="home" class="screen">
-    <div class="card">
-      <div class="big" id="contador">0</div>
-      <div>dias de treino</div>
+<div class="motivacional" id="motivacional"></div>
+<div class="historic-box" id="historicoLista"></div>
+</div>
 
-      <div class="progress">
-        <div class="bar" id="barra"></div>
-      </div>
-
-      <p id="motivacao"></p>
-
-      <input type="date" id="dataTreino" />
-      <textarea id="nota" placeholder="Notas do treino..."></textarea>
-
-      <button class="primary" onclick="registrar()">Registrar Treino</button>
-      <button class="danger" onclick="resetar()">Resetar</button>
-    </div>
-  </div>
-
-  <div id="historico" class="screen hidden">
-    <div class="card">
-      <h3>Histórico</h3>
-      <ul id="lista"></ul>
-    </div>
-  </div>
-
-  <div id="dashboard" class="screen hidden">
-    <div class="card">
-      <h3>Treinos por mês</h3>
-      <canvas id="grafico"></canvas>
-    </div>
-  </div>
-
-  <div class="nav">
-    <button onclick="trocar('home')">Home</button>
-    <button onclick="trocar('historico')">Histórico</button>
-    <button onclick="trocar('dashboard')">Dashboard</button>
-  </div>
-
+<!-- Modal -->
+<div id="modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0008;justify-content:center;align-items:center">
+<div style="background:white;color:black;padding:20px;border-radius:12px;width:300px">
+<h3>Data do treino</h3>
+<input type="date" id="dataTreino" style="width:100%;padding:10px">
+<button style="margin-top:10px;width:100%;padding:10px" onclick="registrarDataEscolhida()">Salvar</button>
+<button style="margin-top:10px;width:100%;padding:10px" onclick="fecharModal()">Cancelar</button>
+</div>
 </div>
 
 <script>
-const META = 200;
+const META=200;
 let db;
 
-function initDB() {
-  const request = indexedDB.open("treinoDB", 1);
-
-  request.onupgradeneeded = e => {
-    db = e.target.result;
-    db.createObjectStore("treinos", { keyPath: "id", autoIncrement: true });
-  };
-
-  request.onsuccess = e => {
-    db = e.target.result;
-    atualizar();
-  };
+function initDB(){
+ const req=indexedDB.open('treinoDB',1);
+ req.onupgradeneeded=e=>{
+  db=e.target.result;
+  db.createObjectStore('treinos',{keyPath:'id',autoIncrement:true});
+ };
+ req.onsuccess=e=>{db=e.target.result;carregarTudo();};
 }
 
-function registrar() {
-  const data = document.getElementById("dataTreino").value || new Date().toISOString().split("T")[0];
-  const nota = document.getElementById("nota").value;
-
-  const tx = db.transaction("treinos", "readwrite");
-  tx.objectStore("treinos").add({ data, nota });
-
-  tx.oncomplete = () => {
-    document.getElementById("nota").value = "";
-    atualizar();
-  };
+function addRegistro(data){
+ const tx=db.transaction('treinos','readwrite');
+ tx.objectStore('treinos').add({data});
+ tx.oncomplete=carregarTudo;
 }
 
-function getAll(callback) {
-  const tx = db.transaction("treinos", "readonly");
-  const store = tx.objectStore("treinos");
-  const req = store.getAll();
-  req.onsuccess = () => callback(req.result);
+function getAll(cb){
+ const tx=db.transaction('treinos','readonly');
+ const req=tx.objectStore('treinos').getAll();
+ req.onsuccess=()=>cb(req.result);
 }
 
-function deletar(id) {
-  const tx = db.transaction("treinos", "readwrite");
-  tx.objectStore("treinos").delete(id);
-  tx.oncomplete = atualizar;
+function deletar(id){
+ const tx=db.transaction('treinos','readwrite');
+ tx.objectStore('treinos').delete(id);
+ tx.oncomplete=carregarTudo;
 }
 
-function atualizar() {
-  getAll(data => {
-    const total = data.length;
-    document.getElementById("contador").innerText = total;
-
-    const progresso = (total / META) * 100;
-    document.getElementById("barra").style.width = progresso + "%";
-
-    document.getElementById("motivacao").innerText = mensagem(total);
-
-    const lista = document.getElementById("lista");
-    lista.innerHTML = "";
-
-    data.forEach(item => {
-      const li = document.createElement("li");
-      li.innerHTML = `${item.data} - ${item.nota || ''} <button onclick="deletar(${item.id})">❌</button>`;
-      lista.appendChild(li);
-    });
-
-    gerarGrafico(data);
-  });
+function salvarHoje(){
+ const hoje=new Date().toISOString().slice(0,10);
+ addRegistro(hoje);
 }
 
-function mensagem(n) {
-  if (n < 20) return "🚀 Começando!";
-  if (n < 100) return "🔥 Mantém o ritmo!";
-  if (n < 180) return "💪 Você é imparável!";
-  return "🏆 Quase lá!";
+function abrirRegistroData(){
+ document.getElementById('modal').style.display='flex';
+ document.getElementById('dataTreino').value=new Date().toISOString().slice(0,10);
 }
 
-function resetar() {
-  const tx = db.transaction("treinos", "readwrite");
-  const store = tx.objectStore("treinos");
-  store.clear();
-  tx.oncomplete = atualizar;
+function registrarDataEscolhida(){
+ const d=document.getElementById('dataTreino').value;
+ if(!d) return;
+ addRegistro(d);
+ fecharModal();
 }
 
-function trocar(tela) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
-  document.getElementById(tela).classList.remove("hidden");
+function fecharModal(){document.getElementById('modal').style.display='none';}
+
+function carregarTudo(){
+ getAll(data=>{
+  localStorage.setItem('backup',JSON.stringify(data));
+  atualizarTela(data);
+ });
 }
 
-function gerarGrafico(data) {
-  const meses = Array(12).fill(0);
+function atualizarTela(data){
+ const total=data.length;
+ document.getElementById('contador').textContent=total;
+ document.getElementById('progressFill').style.width=(total/META*100)+'%';
+ atualizarMensagem(total);
+ atualizarTema(total);
 
-  data.forEach(t => {
-    const m = new Date(t.data).getMonth();
-    meses[m]++;
-  });
-
-  const ctx = document.getElementById("grafico").getContext("2d");
-  if (window.chart) window.chart.destroy();
-
-  window.chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
-      datasets: [{ data: meses }]
-    }
-  });
+ let lista=document.getElementById('historicoLista');
+ lista.innerHTML='';
+ data.forEach(item=>{
+  lista.innerHTML+=`<div class="registro-item">${item.data}<button onclick="deletar(${item.id})">X</button></div>`;
+ });
 }
 
-// default hoje
-window.onload = () => {
-  document.getElementById("dataTreino").value = new Date().toISOString().split("T")[0];
-  initDB();
-};
+function atualizarMensagem(n){
+ let p=n/META*100;
+ let msg=document.getElementById('motivacional');
+ if(p===0) msg.textContent='Vamos começar! 💪';
+ else if(p<25) msg.textContent='Bora! 🚀';
+ else if(p<50) msg.textContent='Ritmo forte 🔥';
+ else if(p<75) msg.textContent='Você é brabo 😎';
+ else if(p<100) msg.textContent='Quase lá!';
+ else msg.textContent='🏆 META COMPLETA!';
+}
+
+function atualizarTema(n){
+ const temas=['tema1','tema2','tema3','tema4','tema5'];
+ let index=Math.floor(n/30)%temas.length;
+ document.getElementById('appContainer').className='container '+temas[index];
+}
+
+function resetar(){
+ if(!confirm('Zerar tudo?')) return;
+ const tx=db.transaction('treinos','readwrite');
+ tx.objectStore('treinos').clear();
+ tx.oncomplete=carregarTudo;
+}
+
+window.onload=initDB;
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 </html>
