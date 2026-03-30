@@ -7,7 +7,7 @@ body {
 .navbar {
     display: flex;
     justify-content: space-around;
-    background: #ff61ca;
+    background: #e9a3d2;
     padding: 10px;
 }
 
@@ -85,7 +85,7 @@ button {
 }
 
 .btn-add:hover {
-    background: #ff3b2e;
+    background: #435df1;
 }
 
 .btn-save {
