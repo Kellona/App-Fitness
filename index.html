@@ -1,174 +1,77 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Desafio 200 Dias PRO</title>
-
-<style>
-:root{
-  --primary:#6C63FF;
-  --secondary:#00C9A7;
-  --accent:#FF6584;
-}
-body{
-  font-family: Arial, sans-serif;
-  margin:0;
-  background:#0f172a;
-  color:white;
-  display:flex;
-  justify-content:center;
-}
-.container{
-  width:380px;
-  padding:25px;
-  border-radius:18px;
-  margin:20px;
-  text-align:center;
-  background:#1e293b;
-}
-h1{margin:5px 0}
-.contador{font-size:60px;font-weight:bold}
-.progress-bar{height:14px;background:#333;border-radius:10px;margin:15px 0}
-.progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--secondary),var(--accent));width:0%}
-button{width:100%;padding:14px;margin-top:10px;border:none;border-radius:12px;font-size:16px;font-weight:bold;cursor:pointer}
-.btn-add{background:#ff6f61;color:white}
-.btn-save{background:#3cb371;color:white}
-.btn-reset{background:white;color:black}
-.motivacional{margin-top:15px;font-weight:bold}
-.historic-box{margin-top:20px;max-height:180px;overflow:auto;background:#0f172a;padding:10px;border-radius:10px}
-.registro-item{display:flex;justify-content:space-between;margin:5px 0;background:#334155;padding:8px;border-radius:8px}
-.registro-item button{width:auto;padding:5px;font-size:12px;background:red;color:white}
-.tema1{background:linear-gradient(135deg,#ffecd2,#fcb69f)}
-.tema2{background:linear-gradient(135deg,#d9a7c7,#fffcdc)}
-.tema3{background:linear-gradient(135deg,#a1c4fd,#c2e9fb)}
-.tema4{background:linear-gradient(135deg,#f6d365,#fda085)}
-.tema5{background:linear-gradient(135deg,#84fab0,#8fd3f4)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornada Fitness</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="app.js"></script>
+    <script defer src="db.js"></script>
 </head>
+
 <body>
+    <div id="app">
 
-<div class="container" id="appContainer">
-<h1>🔥 200 Dias 🔥</h1>
-<div class="contador" id="contador">0</div>
-<p>de 200 dias</p>
-<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <!-- NAV -->
+        <nav class="navbar">
+            <button onclick="trocarTela('home')" id="btnHome">🏋️</button>
+            <button onclick="trocarTela('historico')" id="btnHistorico">📅</button>
+            <button onclick="trocarTela('notas')" id="btnNotas">📝</button>
+            <button onclick="trocarTela('dashboard')" id="btnDashboard">📊</button>
+        </nav>
 
-<button class="btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
-<button class="btn-save" onclick="salvarHoje()">Salvar Hoje</button>
-<button class="btn-reset" onclick="resetar()">Resetar</button>
+        <!-- TELA PRINCIPAL -->
+        <section id="home" class="tela ativa">
+            <h1>Contador de Treinos</h1>
+            <p>sua jornada fitness</p>
 
-<div class="motivacional" id="motivacional"></div>
-<div class="historic-box" id="historicoLista"></div>
-</div>
+            <div class="contador-grande" id="contador">0</div>
+            <p>de 200 dias no ano</p>
 
-<!-- Modal -->
-<div id="modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0008;justify-content:center;align-items:center">
-<div style="background:white;color:black;padding:20px;border-radius:12px;width:300px">
-<h3>Data do treino</h3>
-<input type="date" id="dataTreino" style="width:100%;padding:10px">
-<button style="margin-top:10px;width:100%;padding:10px" onclick="registrarDataEscolhida()">Salvar</button>
-<button style="margin-top:10px;width:100%;padding:10px" onclick="fecharModal()">Cancelar</button>
-</div>
-</div>
+            <!-- Barra de progresso -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
 
-<script>
-const META=200;
-let db;
+            <div class="stats">
+                <div class="stat-box">
+                    <div id="diasRestantes">200</div>
+                    dias restantes
+                </div>
+                <div class="stat-box">
+                    <div id="diasMeta">0</div>
+                    dias até a meta
+                </div>
+            </div>
 
-function initDB(){
- const req=indexedDB.open('treinoDB',1);
- req.onupgradeneeded=e=>{
-  db=e.target.result;
-  db.createObjectStore('treinos',{keyPath:'id',autoIncrement:true});
- };
- req.onsuccess=e=>{db=e.target.result;carregarTudo();};
-}
+            <button class="btn-add" onclick="adicionarTreino()">Dia de Treino</button>
+            <button class="btn-save" onclick="salvarRegistro()">Salvar Registro</button>
+            <button class="btn-reset" onclick="resetar()">Resetar</button>
 
-function addRegistro(data){
- const tx=db.transaction('treinos','readwrite');
- tx.objectStore('treinos').add({data});
- tx.oncomplete=carregarTudo;
-}
+            <div class="motivacional" id="motivacional">Vamos começar! 💪🔥</div>
+        </section>
 
-function getAll(cb){
- const tx=db.transaction('treinos','readonly');
- const req=tx.objectStore('treinos').getAll();
- req.onsuccess=()=>cb(req.result);
-}
+        <!-- TELA HISTÓRICO -->
+        <section id="historico" class="tela">
+            <h2>Histórico de Treinos 📅</h2>
+            <ul id="listaHistorico"></ul>
+        </section>
 
-function deletar(id){
- const tx=db.transaction('treinos','readwrite');
- tx.objectStore('treinos').delete(id);
- tx.oncomplete=carregarTudo;
-}
+        <!-- TELA NOTAS -->
+        <section id="notas" class="tela">
+            <h2>Notas do Treino 📝</h2>
+            <textarea id="campoNota" placeholder="Escreva aqui detalhes do treino..."></textarea>
+            <button onclick="salvarNota()">Salvar Nota</button>
 
-function salvarHoje(){
- const hoje=new Date().toISOString().slice(0,10);
- addRegistro(hoje);
-}
+            <h3>Notas Salvas:</h3>
+            <ul id="listaNotas"></ul>
+        </section>
 
-function abrirRegistroData(){
- document.getElementById('modal').style.display='flex';
- document.getElementById('dataTreino').value=new Date().toISOString().slice(0,10);
-}
-
-function registrarDataEscolhida(){
- const d=document.getElementById('dataTreino').value;
- if(!d) return;
- addRegistro(d);
- fecharModal();
-}
-
-function fecharModal(){document.getElementById('modal').style.display='none';}
-
-function carregarTudo(){
- getAll(data=>{
-  localStorage.setItem('backup',JSON.stringify(data));
-  atualizarTela(data);
- });
-}
-
-function atualizarTela(data){
- const total=data.length;
- document.getElementById('contador').textContent=total;
- document.getElementById('progressFill').style.width=(total/META*100)+'%';
- atualizarMensagem(total);
- atualizarTema(total);
-
- let lista=document.getElementById('historicoLista');
- lista.innerHTML='';
- data.forEach(item=>{
-  lista.innerHTML+=`<div class="registro-item">${item.data}<button onclick="deletar(${item.id})">X</button></div>`;
- });
-}
-
-function atualizarMensagem(n){
- let p=n/META*100;
- let msg=document.getElementById('motivacional');
- if(p===0) msg.textContent='Vamos começar! 💪';
- else if(p<25) msg.textContent='Bora! 🚀';
- else if(p<50) msg.textContent='Ritmo forte 🔥';
- else if(p<75) msg.textContent='Você é brabo 😎';
- else if(p<100) msg.textContent='Quase lá!';
- else msg.textContent='🏆 META COMPLETA!';
-}
-
-function atualizarTema(n){
- const temas=['tema1','tema2','tema3','tema4','tema5'];
- let index=Math.floor(n/30)%temas.length;
- document.getElementById('appContainer').className='container '+temas[index];
-}
-
-function resetar(){
- if(!confirm('Zerar tudo?')) return;
- const tx=db.transaction('treinos','readwrite');
- tx.objectStore('treinos').clear();
- tx.oncomplete=carregarTudo;
-}
-
-window.onload=initDB;
-</script>
-
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="tela">
+            <h2>Progresso Mensal 📊</h2>
+            <canvas id="grafico"></canvas>
+        </section>
+    </div>
 </body>
 </html>
