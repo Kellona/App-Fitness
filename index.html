@@ -1,248 +1,267 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Contador de Treinos</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desafio 200 Dias</title>
 
-<style>
+  <style>
+    :root {
+      --primary: #6C63FF;
+      --secondary: #00C9A7;
+      --accent: #FF6584;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #ffffff;
+    }
+
     body {
-        font-family: Arial, sans-serif;
-        background: #f2f6ff;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      text-align: center;
+      padding: 15px;
+      font-size: 22px;
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
     }
 
     .container {
-        width: 380px;
-        background: white;
-        padding: 30px;
-        border-radius: 18px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        text-align: center;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
     }
 
-    h1 { font-size: 26px; margin-bottom: 5px; }
-
-    .contador {
-        font-size: 60px;
-        font-weight: bold;
-        margin: 10px 0;
+    .card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
     }
 
-    .progress-bar {
-        width: 100%;
-        height: 14px;
-        background: #dedede;
-        border-radius: 10px;
-        margin: 15px 0;
+    .big {
+      font-size: 60px;
+      text-align: center;
     }
-    .progress-fill {
-        height: 100%;
-        background: #4a57ff;
-        border-radius: 10px;
-        transition: width 0.3s;
-        width: 0%;
+
+    .progress {
+      height: 20px;
+      background: #333;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--secondary), var(--accent));
+      width: 0%;
     }
 
     button {
-        width: 100%;
-        padding: 15px;
-        margin-top: 10px;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        font-size: 18px;
-        font-weight: bold;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 5px;
     }
 
-    .btn-add    { background: #ff6f61; color: white; }
-    .btn-save   { background: #3cb371; color: white; }
-    .btn-reset  { background: #ffffff; border: 2px solid #555; }
+    .primary { background: var(--primary); color: white; }
+    .danger { background: var(--accent); color: white; }
 
-    .btn-add:hover   { background: #ff3b2e; }
-    .btn-save:hover  { background: #2e8b57; }
-
-    .motivacional {
-        margin-top: 20px;
-        font-size: 18px;
-        font-weight: bold;
-        color: #4a57ff;
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
     }
 
-    .historic-box {
-        text-align: left;
-        margin-top: 25px;
-        padding: 15px;
-        background: #fafafa;
-        border-radius: 10px;
-        max-height: 180px;
-        overflow-y: auto;
-        border: 1px solid #e3e3e3;
+    .nav {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
     }
 
-    .registro-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px;
-        border-bottom: 1px solid #ddd;
+    .hidden { display: none; }
+
+    ul { list-style: none; padding: 0; }
+
+    li {
+      background: #334155;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-
-    .registro-item button {
-        width: auto;
-        padding: 5px 10px;
-        font-size: 12px;
-        border-radius: 6px;
-        background: #ff4f4f;
-        color: white;
-    }
-
-    .tema1 { background: linear-gradient(135deg,#ffecd2,#fcb69f); }
-    .tema2 { background: linear-gradient(135deg,#d9a7c7,#fffcdc); }
-    .tema3 { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
-    .tema4 { background: linear-gradient(135deg,#f6d365,#fda085); }
-    .tema5 { background: linear-gradient(135deg,#84fab0,#8fd3f4); }
-
-</style>
+  </style>
 </head>
 <body>
 
-<div class="container" id="appContainer">
+<header>🔥 Desafio 200 Dias 🔥</header>
 
-    <h1>Contador de Treinos</h1>
-    <p>Sua jornada fitness</p>
+<div class="container">
 
-    <div class="contador" id="contador">0</div>
-    <p>de 200 dias</p>
+  <div id="home" class="screen">
+    <div class="card">
+      <div class="big" id="contador">0</div>
+      <div>dias de treino</div>
 
-    <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
+      <div class="progress">
+        <div class="bar" id="barra"></div>
+      </div>
+
+      <p id="motivacao"></p>
+
+      <input type="date" id="dataTreino" />
+      <textarea id="nota" placeholder="Notas do treino..."></textarea>
+
+      <button class="primary" onclick="registrar()">Registrar Treino</button>
+      <button class="danger" onclick="resetar()">Resetar</button>
     </div>
+  </div>
 
-    <button class="btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
-    <button class="btn-save" onclick="salvarRegistro()">Salvar Hoje</button>
-    <button class="btn-reset" onclick="resetar()">Resetar</button>
-
-    <div class="motivacional" id="motivacional">Vamos começar! 💪🔥</div>
-
-    <div class="historic-box" id="historicoLista"></div>
-
-</div>
-
-<!-- Modal para escolher data -->
-<div id="modal" style="
-    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
-    <div style="
-        background:white; padding:20px; width:300px; border-radius:12px; text-align:center;">
-        
-        <h3>Data do Treino</h3>
-        <input type="date" id="dataTreino" style="padding:10px; width:100%;">
-
-        <button style="margin-top:10px; background:#4a57ff; color:white; padding:10px; width:100%; border-radius:10px;"
-        onclick="registrarDataEscolhida()">Registrar</button>
-
-        <button style="margin-top:10px; background:#aaa; padding:10px; width:100%; border-radius:10px;"
-        onclick="fecharModal()">Cancelar</button>
+  <div id="historico" class="screen hidden">
+    <div class="card">
+      <h3>Histórico</h3>
+      <ul id="lista"></ul>
     </div>
+  </div>
+
+  <div id="dashboard" class="screen hidden">
+    <div class="card">
+      <h3>Treinos por mês</h3>
+      <canvas id="grafico"></canvas>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button onclick="trocar('home')">Home</button>
+    <button onclick="trocar('historico')">Histórico</button>
+    <button onclick="trocar('dashboard')">Dashboard</button>
+  </div>
+
 </div>
 
 <script>
-    const META = 200;
-    let contador = 0;
-    let historico = JSON.parse(localStorage.getItem("treinos")) || [];
+const META = 200;
+let db;
 
-    function atualizarTema() {
-        const temas = ["tema1","tema2","tema3","tema4","tema5"];
-        let index = Math.floor(contador / 30) % temas.length;
+function initDB() {
+  const request = indexedDB.open("treinoDB", 1);
 
-        let container = document.getElementById("appContainer");
-        container.className = "container " + temas[index];
+  request.onupgradeneeded = e => {
+    db = e.target.result;
+    db.createObjectStore("treinos", { keyPath: "id", autoIncrement: true });
+  };
+
+  request.onsuccess = e => {
+    db = e.target.result;
+    atualizar();
+  };
+}
+
+function registrar() {
+  const data = document.getElementById("dataTreino").value || new Date().toISOString().split("T")[0];
+  const nota = document.getElementById("nota").value;
+
+  const tx = db.transaction("treinos", "readwrite");
+  tx.objectStore("treinos").add({ data, nota });
+
+  tx.oncomplete = () => {
+    document.getElementById("nota").value = "";
+    atualizar();
+  };
+}
+
+function getAll(callback) {
+  const tx = db.transaction("treinos", "readonly");
+  const store = tx.objectStore("treinos");
+  const req = store.getAll();
+  req.onsuccess = () => callback(req.result);
+}
+
+function deletar(id) {
+  const tx = db.transaction("treinos", "readwrite");
+  tx.objectStore("treinos").delete(id);
+  tx.oncomplete = atualizar;
+}
+
+function atualizar() {
+  getAll(data => {
+    const total = data.length;
+    document.getElementById("contador").innerText = total;
+
+    const progresso = (total / META) * 100;
+    document.getElementById("barra").style.width = progresso + "%";
+
+    document.getElementById("motivacao").innerText = mensagem(total);
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    data.forEach(item => {
+      const li = document.createElement("li");
+      li.innerHTML = `${item.data} - ${item.nota || ''} <button onclick="deletar(${item.id})">❌</button>`;
+      lista.appendChild(li);
+    });
+
+    gerarGrafico(data);
+  });
+}
+
+function mensagem(n) {
+  if (n < 20) return "🚀 Começando!";
+  if (n < 100) return "🔥 Mantém o ritmo!";
+  if (n < 180) return "💪 Você é imparável!";
+  return "🏆 Quase lá!";
+}
+
+function resetar() {
+  const tx = db.transaction("treinos", "readwrite");
+  const store = tx.objectStore("treinos");
+  store.clear();
+  tx.oncomplete = atualizar;
+}
+
+function trocar(tela) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
+  document.getElementById(tela).classList.remove("hidden");
+}
+
+function gerarGrafico(data) {
+  const meses = Array(12).fill(0);
+
+  data.forEach(t => {
+    const m = new Date(t.data).getMonth();
+    meses[m]++;
+  });
+
+  const ctx = document.getElementById("grafico").getContext("2d");
+  if (window.chart) window.chart.destroy();
+
+  window.chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+      datasets: [{ data: meses }]
     }
+  });
+}
 
-    function atualizarTela() {
-        document.getElementById("contador").textContent = contador;
-        document.getElementById("progressFill").style.width = (contador / META * 100) + "%";
-        atualizarMensagem(contador / META * 100);
-        atualizarTema();
-        carregarLista();
-    }
-
-    function atualizarMensagem(p) {
-        let msg = document.getElementById("motivacional");
-        if (p === 0) msg.textContent = "Vamos começar! 💪🔥";
-        else if (p < 10) msg.textContent = "Cada passo conta! 🚀";
-        else if (p < 25) msg.textContent = "Tá pegando ritmo! 😎";
-        else if (p < 50) msg.textContent = "Você tá voando! ✨";
-        else if (p < 75) msg.textContent = "Metade concluída! 🔥";
-        else if (p < 100) msg.textContent = "Falta pouco! 🏁";
-        else msg.textContent = "META BATIDA! Você é incrível! 🏆🔥";
-    }
-
-    function salvarRegistro() {
-        const hoje = new Date().toISOString().slice(0,10);
-        historico.push({data: hoje});
-        contador++;
-        salvar();
-    }
-
-    function abrirRegistroData() {
-        document.getElementById("modal").style.display = "flex";
-        document.getElementById("dataTreino").value = new Date().toISOString().slice(0,10);
-    }
-
-    function registrarDataEscolhida() {
-        let d = document.getElementById("dataTreino").value;
-        if (!d) return;
-
-        historico.push({data: d});
-        contador++;
-        salvar();
-        fecharModal();
-    }
-
-    function fecharModal() {
-        document.getElementById("modal").style.display = "none";
-    }
-
-    function salvar() {
-        localStorage.setItem("treinos", JSON.stringify(historico));
-        atualizarTela();
-    }
-
-    function carregarLista() {
-        let lista = document.getElementById("historicoLista");
-        lista.innerHTML = "";
-
-        historico.forEach((r, i) => {
-            lista.innerHTML += `
-                <div class="registro-item">
-                    ${r.data}
-                    <button onclick="apagar(${i})">Excluir</button>
-                </div>
-            `;
-        });
-    }
-
-    function apagar(i) {
-        historico.splice(i, 1);
-        contador--;
-        salvar();
-    }
-
-    function resetar() {
-        if (!confirm("Deseja zerar tudo?")) return;
-        historico = [];
-        contador = 0;
-        salvar();
-    }
-
-    atualizarTela();
+// default hoje
+window.onload = () => {
+  document.getElementById("dataTreino").value = new Date().toISOString().split("T")[0];
+  initDB();
+};
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 </html>
