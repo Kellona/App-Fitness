@@ -1,0 +1,113 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #fff4ea;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-around;
+    background: #ff6f61;
+    padding: 10px;
+}
+
+.navbar button {
+    background: white;
+    border: none;
+    padding: 10px;
+    font-size: 22px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.tela {
+    display: none;
+    padding: 20px;
+}
+
+.tela.ativa {
+    display: block;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+.contador-grande {
+    font-size: 80px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.progress-bar {
+    width: 100%;
+    background: #ddd;
+    height: 15px;
+    border-radius: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #4a57ff;
+    border-radius: 10px;
+    transition: 0.4s;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.stat-box {
+    width: 48%;
+    background: #ffe0d3;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    margin-top: 10px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-add {
+    background: #ff6f61;
+    color: white;
+}
+
+.btn-add:hover {
+    background: #ff3b2e;
+}
+
+.btn-save {
+    background: #3cb371;
+    color: white;
+}
+
+.btn-reset {
+    background: white;
+    border: 2px solid #555;
+}
+
+textarea {
+    width: 100%;
+    height: 120px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #ccc;
+    font-size: 16px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
