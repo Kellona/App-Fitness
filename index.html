@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!DO<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Contador de Treinos + Peso</title>
+<title>Contador de Treinos + Peso & IMC</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -29,24 +29,23 @@
     }
 
     h1 { font-size: 26px; margin-bottom: 5px; }
-    button { cursor: pointer; }
 
-    /* Aba */
-    .tabs { display: flex; margin-bottom: 20px; }
+    .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #ddd;
+    }
     .tab {
         flex: 1;
-        padding: 12px;
+        padding: 10px;
+        cursor: pointer;
         font-weight: bold;
-        background: #ddd;
-        border-radius: 10px 10px 0 0;
+        color: #555;
     }
     .tab.active {
-        background: #4a57ff;
-        color: white;
+        color: #4a57ff;
+        border-bottom: 3px solid #4a57ff;
     }
-
-    .abaConteudo { display: none; }
-    .abaConteudo.active { display: block; }
 
     .contador {
         font-size: 60px;
@@ -76,10 +75,21 @@
         width: 0%;
     }
 
-    .btn-add    { background: #ff6f61; color: white; width:100%; padding:15px; border:none; border-radius:12px; margin-top:10px; font-size:16px; }
-    .btn-save   { background: #3cb371; color: white; width:100%; padding:15px; border:none; border-radius:12px; margin-top:10px; font-size:16px; }
-    .btn-reset  { background: #ffffff; border:2px solid #555; width:100%; padding:15px; border-radius:12px; margin-top:10px; font-size:16px; }
-    .btn-treino { background: #4a57ff; color: white; width:100%; padding:15px; border:none; border-radius:12px; margin-top:10px; font-size:16px; }
+    button {
+        width: 100%;
+        padding: 15px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .btn-add    { background: #ff6f61; color: white; }
+    .btn-save   { background: #3cb371; color: white; }
+    .btn-reset  { background: #ffffff; border: 2px solid #555; }
+    .btn-treino { background: #4a57ff; color: white; }
 
     .historic-box {
         text-align: left;
@@ -98,42 +108,41 @@
         padding: 8px;
         border-bottom: 1px solid #ddd;
     }
+
     .registro-item button {
+        width: auto;
+        padding: 5px 10px;
+        font-size: 12px;
+        border-radius: 6px;
         background: #ff4f4f;
         color: white;
-        border: none;
-        border-radius: 6px;
-        padding: 6px 10px;
     }
 
-    /* NOVA ABA PESO */
-    input {
-        padding: 10px;
-        width: 100%;
-        margin: 5px 0;
-        border-radius: 10px;
-        border: 1px solid #999;
-    }
-
+    .tema1 { background: linear-gradient(135deg,#ffecd2,#fcb69f); }
+    .tema2 { background: linear-gradient(135deg,#d9a7c7,#fffcdc); }
+    .tema3 { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
+    .tema4 { background: linear-gradient(135deg,#f6d365,#fda085); }
+    .tema5 { background: linear-gradient(135deg,#84fab0,#8fd3f4); }
 </style>
 </head>
 <body>
 
 <div class="container" id="appContainer">
 
+    <h1>Seu Painel Fitness</h1>
+
+    <!-- ABAS -->
     <div class="tabs">
-        <div class="tab active" onclick="abrirAba('treinos')">Treinos</div>
-        <div class="tab" onclick="abrirAba('peso')">Peso</div>
+        <div class="tab active" onclick="abrirAba('treinos')" id="tabTreinos">Treinos</div>
+        <div class="tab" onclick="abrirAba('peso')" id="tabPeso">Peso & IMC</div>
     </div>
 
     <!-- ABA TREINOS -->
-    <div id="abaTreinos" class="abaConteudo active">
-
-        <h1>Contador de Treinos</h1>
-        <p>Sua jornada fitness</p>
+    <div id="abaTreinos">
 
         <div class="contador" id="contador">0</div>
         <div class="faltam" id="faltamDias"></div>
+
         <p>de 200 dias</p>
 
         <div class="progress-bar">
@@ -143,43 +152,45 @@
         <button class="btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
         <button class="btn-save" onclick="salvarRegistro()">Salvar Hoje</button>
         <button class="btn-reset" onclick="resetar()">Resetar</button>
-
         <button class="btn-treino" onclick="mostrarTreinoDia()">Ver Treino de Hoje</button>
 
-        <div id="boxTreino" style="display:none; background:#eef3ff; padding:20px; margin-top:20px; border-radius:12px; text-align:left;"></div>
+        <div id="boxTreino"
+             style="display:none; background:#eef3ff; padding:20px; margin-top:20px;
+                    border-radius:12px; text-align:left;">
+        </div>
 
         <div class="historic-box" id="historicoLista"></div>
 
         <h2>Gráfico Mensal</h2>
-        <canvas id="graficoMensal"></canvas>
+        <canvas id="graficoMensal" width="350" height="200"></canvas>
     </div>
 
     <!-- ABA PESO -->
-    <div id="abaPeso" class="abaConteudo">
+    <div id="abaPeso" style="display:none;">
+        
+        <h2>Registrar Peso</h2>
 
-        <h1>Registro de Peso</h1>
+        <input type="date" id="dataPeso" style="width:100%; padding:10px;">
+        <input type="number" id="pesoInput" placeholder="Peso (kg)" style="width:100%; padding:10px; margin-top:10px;">
 
-        <input type="date" id="pesoData">
-        <input type="number" id="pesoValor" placeholder="Peso em kg">
+        <button class="btn-save" onclick="registrarPeso()">Salvar Peso</button>
 
-        <button class="btn-save" onclick="salvarPeso()">Registrar Peso</button>
-
-        <div class="historic-box" id="listaPesos"></div>
+        <h3 style="margin-top:20px;">Histórico</h3>
+        <div class="historic-box" id="listaPeso"></div>
 
         <h2>Evolução do Peso</h2>
-        <canvas id="graficoPeso"></canvas>
-
+        <canvas id="graficoPeso" width="350" height="200"></canvas>
     </div>
 
 </div>
 
-
-<!-- MODAL -->
-<div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
-
+<!-- Modal -->
+<div id="modal" style="
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+    
     <div style="background:white; padding:20px; width:300px; border-radius:12px; text-align:center;">
-
+        
         <h3>Data do Treino</h3>
         <input type="date" id="dataTreino" style="padding:10px; width:100%;">
 
@@ -191,184 +202,222 @@ background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
     </div>
 </div>
 
-
 <script>
+    const META = 200;
+    let contador = 0;
+    let historico = JSON.parse(localStorage.getItem("treinos")) || [];
 
-const META = 200;
-let contador = 0;
-let historico = JSON.parse(localStorage.getItem("treinos")) || [];
-let pesos = JSON.parse(localStorage.getItem("pesos")) || [];
+    let pesos = JSON.parse(localStorage.getItem("pesos")) || [];
+    let grafico, graficoPeso;
 
-let grafico, graficoPeso;
+    function abrirAba(aba) {
+        document.getElementById("abaTreinos").style.display = (aba === "treinos" ? "block" : "none");
+        document.getElementById("abaPeso").style.display = (aba === "peso" ? "block" : "none");
 
-/* ----------- ABAS ----------- */
-function abrirAba(aba) {
-    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".abaConteudo").forEach(c => c.classList.remove("active"));
-
-    if (aba === "treinos") {
-        document.querySelector(".tab:nth-child(1)").classList.add("active");
-        document.getElementById("abaTreinos").classList.add("active");
-    } else {
-        document.querySelector(".tab:nth-child(2)").classList.add("active");
-        document.getElementById("abaPeso").classList.add("active");
-    }
-}
-
-/* ---------- PESO ---------- */
-function salvarPeso() {
-    let data = document.getElementById("pesoData").value;
-    let peso = parseFloat(document.getElementById("pesoValor").value);
-
-    if (!data || !peso) {
-        alert("Preencha data e peso!");
-        return;
+        document.getElementById("tabTreinos").classList.toggle("active", aba === "treinos");
+        document.getElementById("tabPeso").classList.toggle("active", aba === "peso");
     }
 
-    pesos.push({ data, peso });
-    localStorage.setItem("pesos", JSON.stringify(pesos));
+    // =====================
+    // FUNÇÕES PESO + IMC
+    // =====================
 
-    carregarPesos();
-    atualizarGraficoPeso();
-}
+    function registrarPeso() {
+        let data = document.getElementById("dataPeso").value;
+        let peso = parseFloat(document.getElementById("pesoInput").value);
 
-function carregarPesos() {
-    let box = document.getElementById("listaPesos");
-    box.innerHTML = "";
-
-    pesos.forEach((p, i) => {
-        box.innerHTML += `
-            <div class="registro-item">
-                ${p.data} — <b>${p.peso} kg</b>
-                <button onclick="removerPeso(${i})">X</button>
-            </div>
-        `;
-    });
-}
-
-function removerPeso(i) {
-    pesos.splice(i, 1);
-    localStorage.setItem("pesos", JSON.stringify(pesos));
-    carregarPesos();
-    atualizarGraficoPeso();
-}
-
-function atualizarGraficoPeso() {
-    if (graficoPeso) graficoPeso.destroy();
-
-    graficoPeso = new Chart(document.getElementById("graficoPeso"), {
-        type: "line",
-        data: {
-            labels: pesos.map(p => p.data),
-            datasets: [{
-                label: "Peso (kg)",
-                data: pesos.map(p => p.peso),
-                borderWidth: 3
-            }]
+        if (!data || !peso) {
+            alert("Preencha data e peso!");
+            return;
         }
-    });
-}
 
+        let imc = calcularIMC(peso);
 
-/* -------- TREINOS -------- */
+        pesos.push({ data, peso, imc });
+        localStorage.setItem("pesos", JSON.stringify(pesos));
 
-function atualizarTela() {
+        carregarListaPeso();
+        atualizarGraficoPeso();
+
+        document.getElementById("pesoInput").value = "";
+    }
+
+    function calcularIMC(peso) {
+        const ALTURA = 1.75; // sua altura fixa
+        return (peso / (ALTURA * ALTURA)).toFixed(2);
+    }
+
+    function carregarListaPeso() {
+        let lista = document.getElementById("listaPeso");
+        lista.innerHTML = "";
+
+        pesos.forEach((p, i) => {
+            lista.innerHTML += `
+                <div class="registro-item">
+                    ${p.data} — ${p.peso}kg — IMC: ${p.imc}
+                    <button onclick="apagarPeso(${i})">X</button>
+                </div>
+            `;
+        });
+    }
+
+    function apagarPeso(i) {
+        pesos.splice(i, 1);
+        localStorage.setItem("pesos", JSON.stringify(pesos));
+        carregarListaPeso();
+        atualizarGraficoPeso();
+    }
+
+    function atualizarGraficoPeso() {
+        if (graficoPeso) graficoPeso.destroy();
+
+        graficoPeso = new Chart(document.getElementById("graficoPeso"), {
+            type: "line",
+            data: {
+                labels: pesos.map(p => p.data),
+                datasets: [{
+                    label: "Peso (kg)",
+                    data: pesos.map(p => p.peso),
+                    borderWidth: 3,
+                }]
+            },
+            options: {
+                responsive: false,
+                tension: 0.3,
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+    }
+
+    // =====================
+    // FUNÇÕES TREINOS (originais)
+    // =====================
+
+    const treinosSemana = {
+        1: `<h3>🔥 SEGUNDA — TREINO A</h3> ... `,
+        2: `<h3>🔥 TERÇA — TREINO B</h3> ... `,
+        3: `<h3>🔥 QUARTA — TREINO C</h3> ... `,
+        4: `<h3>🔥 QUINTA — TREINO A</h3> ... `,
+        5: `<h3>🔥 SEXTA — TREINO B</h3> ... `,
+        6: "Dia livre 🌿",
+        0: "Domingo — descanso"
+    };
+
+    function mostrarTreinoDia() {
+        const hoje = new Date().getDay();
+        document.getElementById("boxTreino").innerHTML = treinosSemana[hoje];
+        document.getElementById("boxTreino").style.display = "block";
+    }
+
+    function atualizarTema() {
+        const temas = ["tema1","tema2","tema3","tema4","tema5"];
+        let index = Math.floor(contador / 30) % temas.length;
+        document.getElementById("appContainer").className = "container " + temas[index];
+    }
+
+    function diasFaltando() { return META - contador; }
+
+    function atualizarTela() {
+        document.getElementById("contador").textContent = contador;
+        document.getElementById("faltamDias").textContent =
+            diasFaltando() > 0 ? `Faltam ${diasFaltando()} dias para a meta` : "Meta alcançada! 🎉🔥";
+
+        document.getElementById("progressFill").style.width =
+            (contador / META * 100) + "%";
+
+        atualizarTema();
+        carregarListaTreinos();
+        atualizarGraficoTreinos();
+    }
+
+    function salvarRegistro() {
+        const hoje = new Date().toISOString().slice(0,10);
+        historico.push({data: hoje});
+        contador++;
+        salvarTreinos();
+    }
+
+    function abrirRegistroData() {
+        document.getElementById("modal").style.display = "flex";
+        document.getElementById("dataTreino").value = new Date().toISOString().slice(0,10);
+    }
+
+    function registrarDataEscolhida() {
+        let d = document.getElementById("dataTreino").value;
+        if (!d) return;
+        historico.push({data: d});
+        contador++;
+        salvarTreinos();
+        fecharModal();
+    }
+
+    function fecharModal() {
+        document.getElementById("modal").style.display = "none";
+    }
+
+    function salvarTreinos() {
+        localStorage.setItem("treinos", JSON.stringify(historico));
+        atualizarTela();
+    }
+
+    function carregarListaTreinos() {
+        let lista = document.getElementById("historicoLista");
+        lista.innerHTML = "";
+
+        historico.forEach((r, i) => {
+            lista.innerHTML += `
+                <div class="registro-item">
+                    ${r.data}
+                    <button onclick="apagarTreino(${i})">Excluir</button>
+                </div>
+            `;
+        });
+    }
+
+    function apagarTreino(i) {
+        historico.splice(i, 1);
+        contador--;
+        salvarTreinos();
+    }
+
+    function resetar() {
+        if (!confirm("Deseja zerar tudo?")) return;
+        historico = [];
+        contador = 0;
+        salvarTreinos();
+    }
+
+    function atualizarGraficoTreinos() {
+        let meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+        let dados = new Array(12).fill(0);
+
+        historico.forEach(r => {
+            let mes = new Date(r.data).getMonth();
+            dados[mes]++;
+        });
+
+        if (grafico) grafico.destroy();
+
+        grafico = new Chart(document.getElementById("graficoMensal"), {
+            type: "bar",
+            data: {
+                labels: meses,
+                datasets: [{
+                    label: "Treinos no mês",
+                    data: dados
+                }]
+            },
+            options: {
+                responsive: false,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
     contador = historico.length;
-
-    document.getElementById("contador").textContent = contador;
-    document.getElementById("faltamDias").textContent =
-        META - contador > 0 ? `Faltam ${META - contador} dias` : "Meta alcançada! 🎉🔥";
-
-    document.getElementById("progressFill").style.width =
-        (contador / META * 100) + "%";
-
-    carregarLista();
-    atualizarGrafico();
-}
-
-function salvarRegistro() {
-    const hoje = new Date().toISOString().slice(0, 10);
-    historico.push({ data: hoje });
-    localStorage.setItem("treinos", JSON.stringify(historico));
     atualizarTela();
-}
-
-function abrirRegistroData() {
-    document.getElementById("modal").style.display = "flex";
-    document.getElementById("dataTreino").value = new Date().toISOString().slice(0, 10);
-}
-
-function registrarDataEscolhida() {
-    let d = document.getElementById("dataTreino").value;
-    historico.push({ data: d });
-    localStorage.setItem("treinos", JSON.stringify(historico));
-    atualizarTela();
-    fecharModal();
-}
-
-function fecharModal() {
-    document.getElementById("modal").style.display = "none";
-}
-
-function carregarLista() {
-    let lista = document.getElementById("historicoLista");
-    lista.innerHTML = "";
-
-    historico.forEach((r, i) => {
-        lista.innerHTML += `
-            <div class="registro-item">
-                ${r.data}
-                <button onclick="apagar(${i})">X</button>
-            </div>
-        `;
-    });
-}
-
-function apagar(i) {
-    historico.splice(i, 1);
-    localStorage.setItem("treinos", JSON.stringify(historico));
-    atualizarTela();
-}
-
-function resetar() {
-    if (!confirm("Deseja zerar tudo?")) return;
-    historico = [];
-    pesos = [];
-    localStorage.clear();
-    atualizarTela();
-    carregarPesos();
+    carregarListaPeso();
     atualizarGraficoPeso();
-}
-
-function atualizarGrafico() {
-    let meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-    let dados = new Array(12).fill(0);
-
-    historico.forEach(r => {
-        let mes = new Date(r.data).getMonth();
-        dados[mes]++;
-    });
-
-    if (grafico) grafico.destroy();
-
-    grafico = new Chart(document.getElementById("graficoMensal"), {
-        type: "bar",
-        data: {
-            labels: meses,
-            datasets: [{
-                label: "Treinos no mês",
-                data: dados,
-                borderWidth: 2
-            }]
-        }
-    });
-}
-
-/* INICIAR */
-atualizarTela();
-carregarPesos();
-atualizarGraficoPeso();
-
 </script>
 
 </body>
