@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Contador de Treinos</title>
+<title>Contador Fitness + Peso</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -12,351 +12,346 @@
         font-family: Arial, sans-serif;
         background: #f2f6ff;
         margin: 0;
-        padding: 20px 0;
+        padding: 0;
         display: flex;
         justify-content: center;
-        align-items: flex-start;
         min-height: 100vh;
     }
 
     .container {
-        width: 380px;
+        width: 420px;
         background: white;
         padding: 30px;
+        margin: 20px 0;
         border-radius: 18px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        text-align: center;
     }
 
-    h1 { font-size: 26px; margin-bottom: 5px; }
+    h1 { text-align: center; }
+
+    /* Abas */
+    .abas {
+        display: flex;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 2px solid #4a57ff;
+    }
+    .aba {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: bold;
+        background: #e0e4ff;
+    }
+    .aba.ativa {
+        background: #4a57ff;
+        color: white;
+    }
+
+    /* Conteúdos */
+    .conteudo {
+        display: none;
+    }
+    .conteudo.ativo {
+        display: block;
+    }
 
     .contador {
         font-size: 60px;
         font-weight: bold;
-        margin: 10px 0;
+        text-align: center;
     }
 
-    .faltam {
-        font-size: 18px;
-        margin-bottom: 10px;
-        color: #333;
-        font-weight: bold;
-    }
-
-    .progress-bar {
+    .btn {
         width: 100%;
-        height: 14px;
-        background: #dedede;
-        border-radius: 10px;
-        margin: 15px 0;
-    }
-    .progress-fill {
-        height: 100%;
-        background: #4a57ff;
-        border-radius: 10px;
-        transition: width 0.3s;
-        width: 0%;
-    }
-
-    button {
-        width: 100%;
-        padding: 15px;
-        margin-top: 10px;
+        padding: 14px;
         border: none;
         border-radius: 12px;
+        margin-top: 10px;
         cursor: pointer;
-        font-size: 18px;
+        font-size: 17px;
         font-weight: bold;
     }
 
-    .btn-add    { background: #ff6f61; color: white; }
-    .btn-save   { background: #3cb371; color: white; }
-    .btn-reset  { background: #ffffff; border: 2px solid #555; }
-    .btn-treino { background: #4a57ff; color: white; }
+    .btn-save { background: #3cb371; color: white; }
+    .btn-add { background: #ff6f61; color: white; }
+    .btn-reset { background: white; border: 2px solid #555; }
+    .btn-peso { background: #4a57ff; color: white; }
 
-    .historic-box {
-        text-align: left;
-        margin-top: 25px;
+    .box {
+        background: #f5f5f5;
+        border-radius: 12px;
         padding: 15px;
-        background: #fafafa;
-        border-radius: 10px;
+        margin-top: 20px;
         max-height: 180px;
         overflow-y: auto;
-        border: 1px solid #e3e3e3;
     }
 
-    .registro-item {
+    .item {
         display: flex;
         justify-content: space-between;
-        padding: 8px;
-        border-bottom: 1px solid #ddd;
+        padding: 6px 0;
+        border-bottom: 1px solid #ccc;
     }
 
-    .registro-item button {
-        width: auto;
-        padding: 5px 10px;
-        font-size: 12px;
-        border-radius: 6px;
-        background: #ff4f4f;
-        color: white;
+    /* Modal */
+    #modal, #modalPeso {
+        display:none; 
+        position:fixed; 
+        top:0; left:0; 
+        width:100%; height:100%;
+        background:rgba(0,0,0,0.6); 
+        justify-content:center; 
+        align-items:center;
     }
-
-    /* Temas dinâmicos */
-    .tema1 { background: linear-gradient(135deg,#ffecd2,#fcb69f); }
-    .tema2 { background: linear-gradient(135deg,#d9a7c7,#fffcdc); }
-    .tema3 { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
-    .tema4 { background: linear-gradient(135deg,#f6d365,#fda085); }
-    .tema5 { background: linear-gradient(135deg,#84fab0,#8fd3f4); }
-
+    .modal-box {
+        background:white; 
+        padding:20px; 
+        width:300px; 
+        border-radius:12px;
+        text-align:center;
+    }
 </style>
 </head>
+
 <body>
 
 <div class="container" id="appContainer">
 
-    <h1>Contador de Treinos</h1>
-    <p>Sua jornada fitness</p>
+    <h1>Jornada Fitness</h1>
 
-    <div class="contador" id="contador">0</div>
-    <div class="faltam" id="faltamDias"></div>
-
-    <p>de 200 dias</p>
-
-    <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
+    <!-- ABAS -->
+    <div class="abas">
+        <div class="aba ativa" onclick="mostrarAba('treinos')">Treinos</div>
+        <div class="aba" onclick="mostrarAba('peso')">Peso</div>
     </div>
 
-    <button class="btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
-    <button class="btn-save" onclick="salvarRegistro()">Salvar Hoje</button>
-    <button class="btn-reset" onclick="resetar()">Resetar</button>
+    <!-- ============================= -->
+    <!-- -------- ABA TREINOS -------- -->
+    <!-- ============================= -->
+    <div id="treinos" class="conteudo ativo">
 
-    <button class="btn-treino" onclick="mostrarTreinoDia()">Ver Treino de Hoje</button>
+        <div class="contador" id="contador">0</div>
+        <p style="text-align:center;">Treinos registrados</p>
 
-    <div id="boxTreino" style="
-        display:none; background:#eef3ff; padding:20px; margin-top:20px;
-        border-radius:12px; text-align:left;">
+        <button class="btn btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
+        <button class="btn btn-save" onclick="salvarHoje()">Salvar Hoje</button>
+        <button class="btn btn-reset" onclick="resetTreinos()">Resetar</button>
+
+        <h3>Histórico</h3>
+        <div class="box" id="historicoTreinos"></div>
+
+        <h3>Gráfico Mensal</h3>
+        <canvas id="graficoTreinos" width="350" height="200"></canvas>
     </div>
 
-    <div class="historic-box" id="historicoLista"></div>
+    <!-- ============================= -->
+    <!-- ---------- ABA PESO --------- -->
+    <!-- ============================= -->
+    <div id="peso" class="conteudo">
 
-    <br><br>
-    <h2>Gráfico Mensal</h2>
-    <canvas id="graficoMensal" width="350" height="200"></canvas>
+        <h3>Registrar Peso</h3>
+        <button class="btn btn-peso" onclick="abrirPeso()">Registrar Peso</button>
+
+        <h3>Histórico de Peso</h3>
+        <div class="box" id="historicoPeso"></div>
+
+        <h3>Evolução do Peso</h3>
+        <canvas id="graficoPeso" width="350" height="200"></canvas>
+    </div>
 
 </div>
 
-<!-- Modal -->
-<div id="modal" style="
-    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
-    
-    <div style="background:white; padding:20px; width:300px; border-radius:12px; text-align:center;">
-        
-        <h3>Data do Treino</h3>
-        <input type="date" id="dataTreino" style="padding:10px; width:100%;">
+<!-- MODAL TREINOS -->
+<div id="modal">
+    <div class="modal-box">
+        <h3>Selecionar Data</h3>
+        <input type="date" id="dataTreino" style="width:100%; padding:10px;">
+        <button class="btn btn-save" onclick="salvarDataTreino()">Salvar</button>
+        <button class="btn btn-reset" onclick="fecharModal()">Cancelar</button>
+    </div>
+</div>
 
-        <button style="margin-top:10px; background:#4a57ff; color:white; padding:10px; width:100%; border-radius:10px;"
-        onclick="registrarDataEscolhida()">Registrar</button>
-
-        <button style="margin-top:10px; background:#aaa; padding:10px; width:100%; border-radius:10px;"
-        onclick="fecharModal()">Cancelar</button>
+<!-- MODAL PESO -->
+<div id="modalPeso">
+    <div class="modal-box">
+        <h3>Data do Peso</h3>
+        <input type="date" id="dataPeso" style="width:100%; padding:10px; margin-bottom:10px;">
+        <h3>Peso (kg)</h3>
+        <input type="number" id="valorPeso" style="width:100%; padding:10px;" step="0.1">
+        <button class="btn btn-save" onclick="salvarPeso()">Salvar Peso</button>
+        <button class="btn btn-reset" onclick="fecharPeso()">Cancelar</button>
     </div>
 </div>
 
 <script>
-    const META = 200;
-    let contador = 0;
-    let historico = JSON.parse(localStorage.getItem("treinos")) || [];
+/* ===========================================
+    SISTEMA DE ABAS
+=========================================== */
+function mostrarAba(nome) {
+    document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+    document.querySelectorAll('.conteudo').forEach(c => c.classList.remove('ativo'));
 
-    let grafico;
+    document.querySelector(`.aba[onclick="mostrarAba('${nome}')"]`).classList.add('ativa');
+    document.getElementById(nome).classList.add('ativo');
 
-    // -----------------------------
-    // TREINOS DA SEMANA
-    // -----------------------------
-    const treinosSemana = {
-        1: `
-            <h3>🔥 SEGUNDA — TREINO A (Inferiores/Glúteos)</h3>
-            <strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>
-            • Agachamento no banco – 3x12<br>
-            • Leg press – 3x12<br>
-            • Cadeira abdutora – 3x15<br>
-            • Mesa flexora – 3x12<br>
-            • Avanço estático – 3x10 por perna<br>
-            • Elevação pélvica – 3x12<br><br>
-            <strong>🚶‍♀️ ESTEIRA — 15 min</strong><br>
-            • Ritmo confortável a moderado<br>
-            • Inclinação 1–3%
-        `,
-        2: `
-            <h3>🔥 TERÇA — TREINO B (Superiores)</h3>
-            <strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>
-            • Puxada frontal – 3x12<br>
-            • Remada baixa – 3x12<br>
-            • Supino máquina – 3x10<br>
-            • Desenvolvimento ombro – 3x10<br>
-            • Tríceps corda – 3x12<br>
-            • Rosca direta – 3x12<br>
-            • Prancha – 2x30s<br><br>
-            <strong>🚶‍♀️ ESTEIRA — 15 min</strong>
-        `,
-        3: `
-            <h3>🔥 QUARTA — TREINO C (Inferiores + Abdome)</h3>
-            <strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>
-            • Cadeira extensora – 3x12<br>
-            • Agachamento sumô com halter – 3x12<br>
-            • Stiff com halteres – 3x12<br>
-            • Glúteo no cabo/caneleira – 3x12 cada perna<br>
-            • Cadeira abdutora – 3x15<br>
-            • Abdômen prancha inclinada – 2x15<br>
-            • Prancha lateral – 2x20s<br><br>
-            <strong>🚶‍♀️ ESTEIRA — 15 min</strong>
-        `,
-        4: `
-            <h3>🔥 QUINTA — TREINO A (Progressão leve)</h3>
-            <strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>
-            Repetir segunda-feira com progressão suave:<br>
-            ➡️ +1–2 repetições OU +1–2 kg em 1 exercício<br><br>
-            <strong>🚶‍♀️ ESTEIRA — 15 min</strong>
-        `,
-        5: `
-            <h3>🔥 SEXTA — TREINO B (Funcional + Superior leve)</h3>
-            <strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>
-            • Agachamento no banco – 2x15<br>
-            • Remada baixa – 2x12<br>
-            • Elevação pélvica – 2x15<br>
-            • Tríceps corda – 2x12<br>
-            • Abdômen supra – 2x15<br>
-            • Prancha – 30s<br>
-            • Desenvolvimento ombro – 2x12<br><br>
-            <strong>🚶‍♀️ ESTEIRA — 15 min</strong>
-        `,
-        6: "<h3>✨ SÁBADO — Livre</h3> Caminhada leve, alongamento, yoga… 🌿",
-        0: "<h3>✨ DOMINGO — Descanso</h3> Recuperar energias 💙"
-    };
+    atualizarGraficos();
+}
 
-    function mostrarTreinoDia() {
-        const hoje = new Date().getDay();
-        const box = document.getElementById("boxTreino");
+/* ===========================================
+    SISTEMA DE TREINOS
+=========================================== */
+let treinos = JSON.parse(localStorage.getItem("treinos")) || [];
 
-        box.innerHTML = treinosSemana[hoje] || "Treino não encontrado!";
-        box.style.display = "block";
-    }
+function atualizarTreinos() {
+    document.getElementById("contador").textContent = treinos.length;
 
-    // -----------------------------
-    // SISTEMA PRINCIPAL DO CONTADOR
-    // -----------------------------
+    let lista = document.getElementById("historicoTreinos");
+    lista.innerHTML = "";
 
-    function atualizarTema() {
-        const temas = ["tema1","tema2","tema3","tema4","tema5"];
-        let index = Math.floor(contador / 30) % temas.length;
-        document.getElementById("appContainer").className = "container " + temas[index];
-    }
+    treinos.forEach((t, i) => {
+        lista.innerHTML += `
+            <div class="item">
+                ${t}
+                <button onclick="deleteTreino(${i})" style="background:#ff4f4f;color:white;border:none;padding:5px 8px;border-radius:6px;">X</button>
+            </div>
+        `;
+    });
 
-    function diasFaltando() {
-        return META - contador;
-    }
+    atualizarGraficos();
+}
 
-    function atualizarTela() {
-        document.getElementById("contador").textContent = contador;
-        document.getElementById("faltamDias").textContent =
-            diasFaltando() > 0 ? `Faltam ${diasFaltando()} dias para a meta` : "Meta alcançada! 🎉🔥";
+function salvarHoje() {
+    let hoje = new Date().toISOString().slice(0,10);
+    treinos.push(hoje);
+    salvarTreinos();
+}
 
-        document.getElementById("progressFill").style.width =
-            (contador / META * 100) + "%";
+function abrirRegistroData() {
+    document.getElementById("dataTreino").value = new Date().toISOString().slice(0,10);
+    document.getElementById("modal").style.display = "flex";
+}
 
-        atualizarTema();
-        carregarLista();
-        atualizarGrafico();
-    }
+function salvarDataTreino() {
+    let data = document.getElementById("dataTreino").value;
+    if (!data) return;
+    treinos.push(data);
+    salvarTreinos();
+    fecharModal();
+}
 
-    function salvarRegistro() {
-        const hoje = new Date().toISOString().slice(0,10);
-        historico.push({data: hoje});
-        contador++;
-        salvar();
-    }
+function fecharModal() {
+    document.getElementById("modal").style.display = "none";
+}
 
-    function abrirRegistroData() {
-        document.getElementById("modal").style.display = "flex";
-        document.getElementById("dataTreino").value = new Date().toISOString().slice(0,10);
-    }
+function deleteTreino(i) {
+    treinos.splice(i, 1);
+    salvarTreinos();
+}
 
-    function registrarDataEscolhida() {
-        let d = document.getElementById("dataTreino").value;
-        if (!d) return;
-        historico.push({data: d});
-        contador++;
-        salvar();
-        fecharModal();
-    }
+function resetTreinos() {
+    if (!confirm("Zerar todos os treinos?")) return;
+    treinos = [];
+    salvarTreinos();
+}
 
-    function fecharModal() {
-        document.getElementById("modal").style.display = "none";
-    }
+function salvarTreinos() {
+    localStorage.setItem("treinos", JSON.stringify(treinos));
+    atualizarTreinos();
+}
 
-    function salvar() {
-        localStorage.setItem("treinos", JSON.stringify(historico));
-        atualizarTela();
-    }
+/* ===========================================
+    SISTEMA DE PESO
+=========================================== */
+let pesos = JSON.parse(localStorage.getItem("pesos")) || [];
 
-    function carregarLista() {
-        let lista = document.getElementById("historicoLista");
-        lista.innerHTML = "";
+function abrirPeso() {
+    document.getElementById("dataPeso").value = new Date().toISOString().slice(0,10);
+    document.getElementById("modalPeso").style.display = "flex";
+}
 
-        historico.forEach((r, i) => {
-            lista.innerHTML += `
-                <div class="registro-item">
-                    ${r.data}
-                    <button onclick="apagar(${i})">Excluir</button>
-                </div>
-            `;
-        });
-    }
+function salvarPeso() {
+    let data = document.getElementById("dataPeso").value;
+    let valor = document.getElementById("valorPeso").value;
 
-    function apagar(i) {
-        historico.splice(i, 1);
-        contador--;
-        salvar();
-    }
+    if (!data || !valor) return;
 
-    function resetar() {
-        if (!confirm("Deseja zerar tudo?")) return;
-        historico = [];
-        contador = 0;
-        salvar();
-    }
+    pesos.push({data, valor: parseFloat(valor)});
+    localStorage.setItem("pesos", JSON.stringify(pesos));
 
-    function atualizarGrafico() {
-        const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-        let dados = new Array(12).fill(0);
+    fecharPeso();
+    atualizarPeso();
+}
 
-        historico.forEach(r => {
-            let mes = new Date(r.data).getMonth();
-            dados[mes]++;
-        });
+function fecharPeso() {
+    document.getElementById("modalPeso").style.display = "none";
+}
 
-        if (grafico) grafico.destroy();
+function atualizarPeso() {
+    let lista = document.getElementById("historicoPeso");
+    lista.innerHTML = "";
 
-        grafico = new Chart(document.getElementById("graficoMensal"), {
-            type: "bar",
-            data: {
-                labels: meses,
-                datasets: [{
-                    label: "Treinos no mês",
-                    data: dados
-                }]
-            },
-            options: {
-                responsive: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    }
+    pesos.forEach((p, i) => {
+        lista.innerHTML += `
+            <div class="item">
+                ${p.data} — <strong>${p.valor} kg</strong>
+                <button onclick="deletePeso(${i})" style="background:#ff4f4f;color:white;border:none;padding:5px 8px;border-radius:6px;">X</button>
+            </div>
+        `;
+    });
 
-    contador = historico.length;
-    atualizarTela();
+    atualizarGraficos();
+}
+
+function deletePeso(i) {
+    pesos.splice(i, 1);
+    localStorage.setItem("pesos", JSON.stringify(pesos));
+    atualizarPeso();
+}
+
+/* ===========================================
+    GRÁFICOS
+=========================================== */
+
+let grafTreinos, grafPeso;
+
+function atualizarGraficos() {
+
+    /* ---- GRAF TREINOS ---- */
+    const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+    let dadosTreinos = new Array(12).fill(0);
+
+    treinos.forEach(d => {
+        let mes = new Date(d).getMonth();
+        dadosTreinos[mes]++;
+    });
+
+    if (grafTreinos) grafTreinos.destroy();
+    grafTreinos = new Chart(document.getElementById("graficoTreinos"), {
+        type: "bar",
+        data: { labels: meses, datasets: [{ label: "Treinos", data: dadosTreinos }] },
+        options: { responsive: false, scales: { y: { beginAtZero: true } } }
+    });
+
+    /* ---- GRAF PESO ---- */
+    let labelsPeso = pesos.map(p => p.data);
+    let dadosPeso = pesos.map(p => p.valor);
+
+    if (grafPeso) grafPeso.destroy();
+    grafPeso = new Chart(document.getElementById("graficoPeso"), {
+        type: "line",
+        data: { labels: labelsPeso, datasets: [{ label: "Peso (kg)", data: dadosPeso }] },
+        options: { responsive: false, scales: { y: { beginAtZero: false } } }
+    });
+
+}
+
+/* Inicialização */
+atualizarTreinos();
+atualizarPeso();
+
 </script>
 
 </body>
