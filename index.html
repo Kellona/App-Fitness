@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!DOC<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Contador Fitness + Peso</title>
+<title>Contador de Treinos + Peso</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -12,233 +12,297 @@
         font-family: Arial, sans-serif;
         background: #f2f6ff;
         margin: 0;
-        padding: 0;
+        padding: 20px 0;
         display: flex;
         justify-content: center;
+        align-items: flex-start;
         min-height: 100vh;
     }
 
     .container {
-        width: 420px;
+        width: 380px;
         background: white;
         padding: 30px;
-        margin: 20px 0;
         border-radius: 18px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        text-align: center;
     }
 
-    h1 { text-align: center; }
+    h1 { font-size: 26px; margin-bottom: 5px; }
+    button { cursor: pointer; }
 
-    /* Abas */
-    .abas {
-        display: flex;
-        margin-bottom: 20px;
-        border-radius: 10px;
-        overflow: hidden;
-        border: 2px solid #4a57ff;
-    }
-    .aba {
+    /* Aba */
+    .tabs { display: flex; margin-bottom: 20px; }
+    .tab {
         flex: 1;
         padding: 12px;
-        text-align: center;
-        cursor: pointer;
         font-weight: bold;
-        background: #e0e4ff;
+        background: #ddd;
+        border-radius: 10px 10px 0 0;
     }
-    .aba.ativa {
+    .tab.active {
         background: #4a57ff;
         color: white;
     }
 
-    /* Conteúdos */
-    .conteudo {
-        display: none;
-    }
-    .conteudo.ativo {
-        display: block;
-    }
+    .abaConteudo { display: none; }
+    .abaConteudo.active { display: block; }
 
     .contador {
         font-size: 60px;
         font-weight: bold;
-        text-align: center;
+        margin: 10px 0;
     }
 
-    .btn {
-        width: 100%;
-        padding: 14px;
-        border: none;
-        border-radius: 12px;
-        margin-top: 10px;
-        cursor: pointer;
-        font-size: 17px;
+    .faltam {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #333;
         font-weight: bold;
     }
 
-    .btn-save { background: #3cb371; color: white; }
-    .btn-add { background: #ff6f61; color: white; }
-    .btn-reset { background: white; border: 2px solid #555; }
-    .btn-peso { background: #4a57ff; color: white; }
+    .progress-bar {
+        width: 100%;
+        height: 14px;
+        background: #dedede;
+        border-radius: 10px;
+        margin: 15px 0;
+    }
+    .progress-fill {
+        height: 100%;
+        background: #4a57ff;
+        border-radius: 10px;
+        transition: width 0.3s;
+        width: 0%;
+    }
 
-    .box {
-        background: #f5f5f5;
-        border-radius: 12px;
+    .btn-add    { background: #ff6f61; color: white; width:100%; padding:15px; border:none; border-radius:12px; margin-top:10px; font-size:16px; }
+    .btn-save   { background: #3cb371; color: white; width:100%; padding:15px; border:none; border-radius:12px; margin-top:10px; font-size:16px; }
+    .btn-reset  { background: #ffffff; border:2px solid #555; width:100%; padding:15px; border-radius:12px; margin-top:10px; font-size:16px; }
+    .btn-treino { background: #4a57ff; color: white; width:100%; padding:15px; border:none; border-radius:12px; margin-top:10px; font-size:16px; }
+
+    .historic-box {
+        text-align: left;
+        margin-top: 25px;
         padding: 15px;
-        margin-top: 20px;
+        background: #fafafa;
+        border-radius: 10px;
         max-height: 180px;
         overflow-y: auto;
+        border: 1px solid #e3e3e3;
     }
 
-    .item {
+    .registro-item {
         display: flex;
         justify-content: space-between;
-        padding: 6px 0;
-        border-bottom: 1px solid #ccc;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+    .registro-item button {
+        background: #ff4f4f;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 10px;
     }
 
-    /* Modal */
-    #modal, #modalPeso {
-        display:none; 
-        position:fixed; 
-        top:0; left:0; 
-        width:100%; height:100%;
-        background:rgba(0,0,0,0.6); 
-        justify-content:center; 
-        align-items:center;
+    /* NOVA ABA PESO */
+    input {
+        padding: 10px;
+        width: 100%;
+        margin: 5px 0;
+        border-radius: 10px;
+        border: 1px solid #999;
     }
-    .modal-box {
-        background:white; 
-        padding:20px; 
-        width:300px; 
-        border-radius:12px;
-        text-align:center;
-    }
+
 </style>
 </head>
-
 <body>
 
 <div class="container" id="appContainer">
 
-    <h1>Jornada Fitness</h1>
-
-    <!-- ABAS -->
-    <div class="abas">
-        <div class="aba ativa" onclick="mostrarAba('treinos')">Treinos</div>
-        <div class="aba" onclick="mostrarAba('peso')">Peso</div>
+    <div class="tabs">
+        <div class="tab active" onclick="abrirAba('treinos')">Treinos</div>
+        <div class="tab" onclick="abrirAba('peso')">Peso</div>
     </div>
 
-    <!-- ============================= -->
-    <!-- -------- ABA TREINOS -------- -->
-    <!-- ============================= -->
-    <div id="treinos" class="conteudo ativo">
+    <!-- ABA TREINOS -->
+    <div id="abaTreinos" class="abaConteudo active">
+
+        <h1>Contador de Treinos</h1>
+        <p>Sua jornada fitness</p>
 
         <div class="contador" id="contador">0</div>
-        <p style="text-align:center;">Treinos registrados</p>
+        <div class="faltam" id="faltamDias"></div>
+        <p>de 200 dias</p>
 
-        <button class="btn btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
-        <button class="btn btn-save" onclick="salvarHoje()">Salvar Hoje</button>
-        <button class="btn btn-reset" onclick="resetTreinos()">Resetar</button>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
 
-        <h3>Histórico</h3>
-        <div class="box" id="historicoTreinos"></div>
+        <button class="btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
+        <button class="btn-save" onclick="salvarRegistro()">Salvar Hoje</button>
+        <button class="btn-reset" onclick="resetar()">Resetar</button>
 
-        <h3>Gráfico Mensal</h3>
-        <canvas id="graficoTreinos" width="350" height="200"></canvas>
+        <button class="btn-treino" onclick="mostrarTreinoDia()">Ver Treino de Hoje</button>
+
+        <div id="boxTreino" style="display:none; background:#eef3ff; padding:20px; margin-top:20px; border-radius:12px; text-align:left;"></div>
+
+        <div class="historic-box" id="historicoLista"></div>
+
+        <h2>Gráfico Mensal</h2>
+        <canvas id="graficoMensal"></canvas>
     </div>
 
-    <!-- ============================= -->
-    <!-- ---------- ABA PESO --------- -->
-    <!-- ============================= -->
-    <div id="peso" class="conteudo">
+    <!-- ABA PESO -->
+    <div id="abaPeso" class="abaConteudo">
 
-        <h3>Registrar Peso</h3>
-        <button class="btn btn-peso" onclick="abrirPeso()">Registrar Peso</button>
+        <h1>Registro de Peso</h1>
 
-        <h3>Histórico de Peso</h3>
-        <div class="box" id="historicoPeso"></div>
+        <input type="date" id="pesoData">
+        <input type="number" id="pesoValor" placeholder="Peso em kg">
 
-        <h3>Evolução do Peso</h3>
-        <canvas id="graficoPeso" width="350" height="200"></canvas>
+        <button class="btn-save" onclick="salvarPeso()">Registrar Peso</button>
+
+        <div class="historic-box" id="listaPesos"></div>
+
+        <h2>Evolução do Peso</h2>
+        <canvas id="graficoPeso"></canvas>
+
     </div>
 
 </div>
 
-<!-- MODAL TREINOS -->
-<div id="modal">
-    <div class="modal-box">
-        <h3>Selecionar Data</h3>
-        <input type="date" id="dataTreino" style="width:100%; padding:10px;">
-        <button class="btn btn-save" onclick="salvarDataTreino()">Salvar</button>
-        <button class="btn btn-reset" onclick="fecharModal()">Cancelar</button>
+
+<!-- MODAL -->
+<div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
+
+    <div style="background:white; padding:20px; width:300px; border-radius:12px; text-align:center;">
+
+        <h3>Data do Treino</h3>
+        <input type="date" id="dataTreino" style="padding:10px; width:100%;">
+
+        <button style="margin-top:10px; background:#4a57ff; color:white; padding:10px; width:100%; border-radius:10px;"
+        onclick="registrarDataEscolhida()">Registrar</button>
+
+        <button style="margin-top:10px; background:#aaa; padding:10px; width:100%; border-radius:10px;"
+        onclick="fecharModal()">Cancelar</button>
     </div>
 </div>
 
-<!-- MODAL PESO -->
-<div id="modalPeso">
-    <div class="modal-box">
-        <h3>Data do Peso</h3>
-        <input type="date" id="dataPeso" style="width:100%; padding:10px; margin-bottom:10px;">
-        <h3>Peso (kg)</h3>
-        <input type="number" id="valorPeso" style="width:100%; padding:10px;" step="0.1">
-        <button class="btn btn-save" onclick="salvarPeso()">Salvar Peso</button>
-        <button class="btn btn-reset" onclick="fecharPeso()">Cancelar</button>
-    </div>
-</div>
 
 <script>
-/* ===========================================
-    SISTEMA DE ABAS
-=========================================== */
-function mostrarAba(nome) {
-    document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
-    document.querySelectorAll('.conteudo').forEach(c => c.classList.remove('ativo'));
 
-    document.querySelector(`.aba[onclick="mostrarAba('${nome}')"]`).classList.add('ativa');
-    document.getElementById(nome).classList.add('ativo');
+const META = 200;
+let contador = 0;
+let historico = JSON.parse(localStorage.getItem("treinos")) || [];
+let pesos = JSON.parse(localStorage.getItem("pesos")) || [];
 
-    atualizarGraficos();
+let grafico, graficoPeso;
+
+/* ----------- ABAS ----------- */
+function abrirAba(aba) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".abaConteudo").forEach(c => c.classList.remove("active"));
+
+    if (aba === "treinos") {
+        document.querySelector(".tab:nth-child(1)").classList.add("active");
+        document.getElementById("abaTreinos").classList.add("active");
+    } else {
+        document.querySelector(".tab:nth-child(2)").classList.add("active");
+        document.getElementById("abaPeso").classList.add("active");
+    }
 }
 
-/* ===========================================
-    SISTEMA DE TREINOS
-=========================================== */
-let treinos = JSON.parse(localStorage.getItem("treinos")) || [];
+/* ---------- PESO ---------- */
+function salvarPeso() {
+    let data = document.getElementById("pesoData").value;
+    let peso = parseFloat(document.getElementById("pesoValor").value);
 
-function atualizarTreinos() {
-    document.getElementById("contador").textContent = treinos.length;
+    if (!data || !peso) {
+        alert("Preencha data e peso!");
+        return;
+    }
 
-    let lista = document.getElementById("historicoTreinos");
-    lista.innerHTML = "";
+    pesos.push({ data, peso });
+    localStorage.setItem("pesos", JSON.stringify(pesos));
 
-    treinos.forEach((t, i) => {
-        lista.innerHTML += `
-            <div class="item">
-                ${t}
-                <button onclick="deleteTreino(${i})" style="background:#ff4f4f;color:white;border:none;padding:5px 8px;border-radius:6px;">X</button>
+    carregarPesos();
+    atualizarGraficoPeso();
+}
+
+function carregarPesos() {
+    let box = document.getElementById("listaPesos");
+    box.innerHTML = "";
+
+    pesos.forEach((p, i) => {
+        box.innerHTML += `
+            <div class="registro-item">
+                ${p.data} — <b>${p.peso} kg</b>
+                <button onclick="removerPeso(${i})">X</button>
             </div>
         `;
     });
-
-    atualizarGraficos();
 }
 
-function salvarHoje() {
-    let hoje = new Date().toISOString().slice(0,10);
-    treinos.push(hoje);
-    salvarTreinos();
+function removerPeso(i) {
+    pesos.splice(i, 1);
+    localStorage.setItem("pesos", JSON.stringify(pesos));
+    carregarPesos();
+    atualizarGraficoPeso();
+}
+
+function atualizarGraficoPeso() {
+    if (graficoPeso) graficoPeso.destroy();
+
+    graficoPeso = new Chart(document.getElementById("graficoPeso"), {
+        type: "line",
+        data: {
+            labels: pesos.map(p => p.data),
+            datasets: [{
+                label: "Peso (kg)",
+                data: pesos.map(p => p.peso),
+                borderWidth: 3
+            }]
+        }
+    });
+}
+
+
+/* -------- TREINOS -------- */
+
+function atualizarTela() {
+    contador = historico.length;
+
+    document.getElementById("contador").textContent = contador;
+    document.getElementById("faltamDias").textContent =
+        META - contador > 0 ? `Faltam ${META - contador} dias` : "Meta alcançada! 🎉🔥";
+
+    document.getElementById("progressFill").style.width =
+        (contador / META * 100) + "%";
+
+    carregarLista();
+    atualizarGrafico();
+}
+
+function salvarRegistro() {
+    const hoje = new Date().toISOString().slice(0, 10);
+    historico.push({ data: hoje });
+    localStorage.setItem("treinos", JSON.stringify(historico));
+    atualizarTela();
 }
 
 function abrirRegistroData() {
-    document.getElementById("dataTreino").value = new Date().toISOString().slice(0,10);
     document.getElementById("modal").style.display = "flex";
+    document.getElementById("dataTreino").value = new Date().toISOString().slice(0, 10);
 }
 
-function salvarDataTreino() {
-    let data = document.getElementById("dataTreino").value;
-    if (!data) return;
-    treinos.push(data);
-    salvarTreinos();
+function registrarDataEscolhida() {
+    let d = document.getElementById("dataTreino").value;
+    historico.push({ data: d });
+    localStorage.setItem("treinos", JSON.stringify(historico));
+    atualizarTela();
     fecharModal();
 }
 
@@ -246,111 +310,64 @@ function fecharModal() {
     document.getElementById("modal").style.display = "none";
 }
 
-function deleteTreino(i) {
-    treinos.splice(i, 1);
-    salvarTreinos();
-}
-
-function resetTreinos() {
-    if (!confirm("Zerar todos os treinos?")) return;
-    treinos = [];
-    salvarTreinos();
-}
-
-function salvarTreinos() {
-    localStorage.setItem("treinos", JSON.stringify(treinos));
-    atualizarTreinos();
-}
-
-/* ===========================================
-    SISTEMA DE PESO
-=========================================== */
-let pesos = JSON.parse(localStorage.getItem("pesos")) || [];
-
-function abrirPeso() {
-    document.getElementById("dataPeso").value = new Date().toISOString().slice(0,10);
-    document.getElementById("modalPeso").style.display = "flex";
-}
-
-function salvarPeso() {
-    let data = document.getElementById("dataPeso").value;
-    let valor = document.getElementById("valorPeso").value;
-
-    if (!data || !valor) return;
-
-    pesos.push({data, valor: parseFloat(valor)});
-    localStorage.setItem("pesos", JSON.stringify(pesos));
-
-    fecharPeso();
-    atualizarPeso();
-}
-
-function fecharPeso() {
-    document.getElementById("modalPeso").style.display = "none";
-}
-
-function atualizarPeso() {
-    let lista = document.getElementById("historicoPeso");
+function carregarLista() {
+    let lista = document.getElementById("historicoLista");
     lista.innerHTML = "";
 
-    pesos.forEach((p, i) => {
+    historico.forEach((r, i) => {
         lista.innerHTML += `
-            <div class="item">
-                ${p.data} — <strong>${p.valor} kg</strong>
-                <button onclick="deletePeso(${i})" style="background:#ff4f4f;color:white;border:none;padding:5px 8px;border-radius:6px;">X</button>
+            <div class="registro-item">
+                ${r.data}
+                <button onclick="apagar(${i})">X</button>
             </div>
         `;
     });
-
-    atualizarGraficos();
 }
 
-function deletePeso(i) {
-    pesos.splice(i, 1);
-    localStorage.setItem("pesos", JSON.stringify(pesos));
-    atualizarPeso();
+function apagar(i) {
+    historico.splice(i, 1);
+    localStorage.setItem("treinos", JSON.stringify(historico));
+    atualizarTela();
 }
 
-/* ===========================================
-    GRÁFICOS
-=========================================== */
+function resetar() {
+    if (!confirm("Deseja zerar tudo?")) return;
+    historico = [];
+    pesos = [];
+    localStorage.clear();
+    atualizarTela();
+    carregarPesos();
+    atualizarGraficoPeso();
+}
 
-let grafTreinos, grafPeso;
+function atualizarGrafico() {
+    let meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+    let dados = new Array(12).fill(0);
 
-function atualizarGraficos() {
-
-    /* ---- GRAF TREINOS ---- */
-    const meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-    let dadosTreinos = new Array(12).fill(0);
-
-    treinos.forEach(d => {
-        let mes = new Date(d).getMonth();
-        dadosTreinos[mes]++;
+    historico.forEach(r => {
+        let mes = new Date(r.data).getMonth();
+        dados[mes]++;
     });
 
-    if (grafTreinos) grafTreinos.destroy();
-    grafTreinos = new Chart(document.getElementById("graficoTreinos"), {
+    if (grafico) grafico.destroy();
+
+    grafico = new Chart(document.getElementById("graficoMensal"), {
         type: "bar",
-        data: { labels: meses, datasets: [{ label: "Treinos", data: dadosTreinos }] },
-        options: { responsive: false, scales: { y: { beginAtZero: true } } }
+        data: {
+            labels: meses,
+            datasets: [{
+                label: "Treinos no mês",
+                data: dados,
+                borderWidth: 2
+            }]
+        }
     });
-
-    /* ---- GRAF PESO ---- */
-    let labelsPeso = pesos.map(p => p.data);
-    let dadosPeso = pesos.map(p => p.valor);
-
-    if (grafPeso) grafPeso.destroy();
-    grafPeso = new Chart(document.getElementById("graficoPeso"), {
-        type: "line",
-        data: { labels: labelsPeso, datasets: [{ label: "Peso (kg)", data: dadosPeso }] },
-        options: { responsive: false, scales: { y: { beginAtZero: false } } }
-    });
-
 }
 
-/* Inicialização */
-atualizarTreinos();
-atualizarPeso();
+/* INICIAR */
+atualizarTela();
+carregarPesos();
+atualizarGraficoPeso();
 
 </script>
 
