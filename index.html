@@ -300,18 +300,44 @@
     }
 
     function carregarListaPeso() {
-        let lista = document.getElementById("listaPeso");
-        lista.innerHTML = "";
+    let lista = document.getElementById("listaPeso");
+    lista.innerHTML = "";
 
-        pesos.forEach((p, i) => {
-            lista.innerHTML += `
-                <div class="registro-item">
-                    ${p.data} — ${p.peso}kg — IMC: ${p.imc}
-                    <button onclick="apagarPeso(${i})">X</button>
-                </div>
-            `;
-        });
-    }
+    pesos.forEach((p, i) => {
+
+        const imc = parseFloat(p.imc);
+
+        let cor = "#4CAF50"; // Verde (peso normal)
+
+        if (imc < 18.5) {
+            cor = "#4DA6FF"; // Azul
+        } else if (imc < 25) {
+            cor = "#4CAF50"; // Verde
+        } else if (imc < 30) {
+            cor = "#FFD54F"; // Amarelo
+        } else if (imc < 35) {
+            cor = "#FF9800"; // Laranja
+        } else if (imc < 40) {
+            cor = "#F44336"; // Vermelho
+        } else {
+            cor = "#9C27B0"; // Roxo
+        }
+
+        lista.innerHTML += `
+            <div class="registro-item"
+                 style="border-left:8px solid ${cor};
+                        background:${cor}15;
+                        margin-bottom:8px;
+                        border-radius:8px;">
+                <span>
+                    <strong>${p.data}</strong><br>
+                    ${p.peso} kg — <strong>IMC: ${p.imc}</strong>
+                </span>
+                <button onclick="apagarPeso(${i})">X</button>
+            </div>
+        `;
+    });
+}
 
     function apagarPeso(i) {
         pesos.splice(i, 1);
