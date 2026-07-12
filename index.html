@@ -19,7 +19,7 @@
         min-height: 100vh;
     }
 
-       .container{
+    .container{
         width:380px;
         background: white;
         padding: 30px;
@@ -106,6 +106,7 @@
     .registro-item {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         padding: 8px;
         border-bottom: 1px solid #ddd;
     }
@@ -113,6 +114,7 @@
     .registro-item button {
         width: auto;
         padding: 5px 10px;
+        margin-top: 0;
         font-size: 12px;
         border-radius: 6px;
         background: #ff4f4f;
@@ -142,10 +144,8 @@
 
     <!-- ABA TREINOS -->
     <div id="abaTreinos">
-
         <div class="contador" id="contador">0</div>
         <div class="faltam" id="faltamDias"></div>
-
         <p>de 200 dias</p>
 
         <div class="progress-bar">
@@ -157,11 +157,7 @@
         <button class="btn-reset" onclick="resetar()">Resetar</button>
         <button class="btn-treino" onclick="mostrarTreinoDia()">Ver Treino de Hoje</button>
 
-        <div id="boxTreino"
-             style="display:none; background:#eef3ff; padding:20px; margin-top:20px;
-                    border-radius:12px; text-align:left;">
-        </div>
-
+        <div id="boxTreino" style="display:none; background:#eef3ff; padding:20px; margin-top:20px; border-radius:12px; text-align:left;"></div>
         <div class="historic-box" id="historicoLista"></div>
 
         <h2>Gráfico Mensal</h2>
@@ -170,11 +166,9 @@
 
     <!-- ABA PESO -->
     <div id="abaPeso" style="display:none;">
-        
         <h2>Registrar Peso</h2>
-
-        <input type="date" id="dataPeso" style="width:100%; padding:10px;">
-        <input type="number" id="pesoInput" placeholder="Peso (kg)" style="width:100%; padding:10px; margin-top:10px;">
+        <input type="date" id="dataPeso" style="width:100%; padding:10px; box-sizing: border-box;">
+        <input type="number" id="pesoInput" placeholder="Peso (kg)" style="width:100%; padding:10px; margin-top:10px; box-sizing: border-box;">
 
         <button class="btn-save" onclick="registrarPeso()">Salvar Peso</button>
 
@@ -187,54 +181,32 @@
 
     <!-- ABA INJEÇÕES -->
     <div id="abaInj" style="display:none;">
-
         <h2>Registrar Injeção</h2>
-
         <button class="btn-inj" onclick="registrarInjecao()">Registrar Injeção da Semana</button>
 
         <h3 style="margin-top:20px;">Histórico</h3>
         <div class="historic-box" id="listaInjecoes"></div>
-
     </div>
 
     <!-- ABA EVOLUÇÃO -->
-<div id="abaFotos" style="display:none;">
+    <div id="abaFotos" style="display:none;">
+        <h2>Evolução do Corpo</h2>
+        <input type="date" id="dataFoto" style="width:100%;padding:10px; box-sizing: border-box;">
+        <input type="file" id="fotoInput" accept="image/*" style="width:100%;margin-top:10px; box-sizing: border-box;">
 
-    <h2>Evolução do Corpo</h2>
-
-    <input type="date" id="dataFoto"
-           style="width:100%;padding:10px;">
-
-    <input type="file"
-           id="fotoInput"
-           accept="image/*"
-           style="width:100%;margin-top:10px;">
-
-    <button class="btn-save" onclick="salvarFoto()">
-        Salvar Foto
-    </button>
-
-    <div id="galeriaFotos"
-         style="margin-top:20px;">
+        <button class="btn-save" onclick="salvarFoto()">Salvar Foto</button>
+        <div id="galeriaFotos" style="margin-top:20px;"></div>
     </div>
-
 </div>
 
 <!-- Modal Treino -->
-<div id="modal" style="
-    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
-    
+<div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index: 1000;">
     <div style="background:white; padding:20px; width:300px; border-radius:12px; text-align:center;">
-        
         <h3>Data do Treino</h3>
-        <input type="date" id="dataTreino" style="padding:10px; width:100%;">
+        <input type="date" id="dataTreino" style="padding:10px; width:100%; box-sizing: border-box;">
 
-        <button style="margin-top:10px; background:#4a57ff; color:white; padding:10px; width:100%; border-radius:10px;"
-        onclick="registrarDataEscolhida()">Registrar</button>
-
-        <button style="margin-top:10px; background:#aaa; padding:10px; width:100%; border-radius:10px;"
-        onclick="fecharModal()">Cancelar</button>
+        <button style="margin-top:10px; background:#4a57ff; color:white; padding:10px; width:100%; border-radius:10px;" onclick="registrarDataEscolhida()">Registrar</button>
+        <button style="margin-top:10px; background:#aaa; padding:10px; width:100%; border-radius:10px; color: white;" onclick="fecharModal()">Cancelar</button>
     </div>
 </div>
 
@@ -247,54 +219,40 @@
     let fotos = JSON.parse(localStorage.getItem("fotos")) || [];
     let grafico, graficoPeso;
 
-   function abrirAba(aba) {
+    function abrirAba(aba) {
+        document.getElementById("abaTreinos").style.display = aba==="treinos" ? "block":"none";
+        document.getElementById("abaPeso").style.display = aba==="peso" ? "block":"none";
+        document.getElementById("abaInj").style.display = aba==="inj" ? "block":"none";
+        document.getElementById("abaFotos").style.display = aba==="fotos" ? "block":"none";
 
-    document.getElementById("abaTreinos").style.display =
-        aba==="treinos" ? "block":"none";
-
-    document.getElementById("abaPeso").style.display =
-        aba==="peso" ? "block":"none";
-
-    document.getElementById("abaInj").style.display =
-        aba==="inj" ? "block":"none";
-
-    document.getElementById("abaFotos").style.display =
-        aba==="fotos" ? "block":"none";
-
-    document.getElementById("tabTreinos").classList.toggle("active",aba==="treinos");
-    document.getElementById("tabPeso").classList.toggle("active",aba==="peso");
-    document.getElementById("tabInj").classList.toggle("active",aba==="inj");
-    document.getElementById("tabFotos").classList.toggle("active",aba==="fotos");
-
-}
+        document.getElementById("tabTreinos").classList.toggle("active",aba==="treinos");
+        document.getElementById("tabPeso").classList.toggle("active",aba==="peso");
+        document.getElementById("tabInj").classList.toggle("active",aba==="inj");
+        document.getElementById("tabFotos").classList.toggle("active",aba==="fotos");
+    }
 
     /* =====================================
              FUNÇÕES – INJEÇÕES
     ===================================== */
-
     function registrarInjecao() {
         const hoje = new Date().toISOString().split("T")[0];
-
         injecoes.push({ data: hoje });
         localStorage.setItem("injecoes", JSON.stringify(injecoes));
-
         carregarInjecoes();
-
         alert("Injeção registrada com sucesso!");
     }
 
     function carregarInjecoes() {
         let lista = document.getElementById("listaInjecoes");
         lista.innerHTML = "";
-
         injecoes.forEach((inj, i) => {
             lista.innerHTML += `
                 <div class="registro-item">
-                    ${inj.data}
+                    <span>${inj.data}</span>
                     <button onclick="apagarInjecao(${i})">X</button>
                 </div>
             `;
-    });
+        });
     }
 
     function apagarInjecao(i) {
@@ -306,7 +264,6 @@
     /* =====================================
              FUNÇÕES PESO
     ===================================== */
-
     function registrarPeso() {
         let data = document.getElementById("dataPeso").value;
         let peso = parseFloat(document.getElementById("pesoInput").value);
@@ -317,13 +274,11 @@
         }
 
         let imc = calcularIMC(peso);
-
         pesos.push({ data, peso, imc });
         localStorage.setItem("pesos", JSON.stringify(pesos));
 
         carregarListaPeso();
         atualizarGraficoPeso();
-        carregarFotos();
 
         document.getElementById("pesoInput").value = "";
     }
@@ -334,73 +289,44 @@
     }
 
     function carregarListaPeso() {
-    let lista = document.getElementById("listaPeso");
-    lista.innerHTML = "";
-
-    // LEGENDA
-    lista.innerHTML += `
-        <div style="
-            margin-bottom:15px;
-            padding:12px;
-            background:#f8f8f8;
-            border-radius:10px;
-            border:1px solid #ddd;
-            font-size:14px;
-            line-height:1.8;
-        ">
-            <strong style="display:block; margin-bottom:8px;">📊 Classificação do IMC</strong>
-
-            <div><span style="display:inline-block;width:18px;height:18px;background:#4DA6FF;border-radius:4px;margin-right:8px;"></span> Abaixo de <strong>18,5</strong> — Abaixo do peso</div>
-
-            <div><span style="display:inline-block;width:18px;height:18px;background:#4CAF50;border-radius:4px;margin-right:8px;"></span> <strong>18,5 a 24,9</strong> — Peso ideal</div>
-
-            <div><span style="display:inline-block;width:18px;height:18px;background:#FFD54F;border-radius:4px;margin-right:8px;"></span> <strong>25,0 a 29,9</strong> — Sobrepeso</div>
-
-            <div><span style="display:inline-block;width:18px;height:18px;background:#FF9800;border-radius:4px;margin-right:8px;"></span> <strong>30,0 a 34,9</strong> — Obesidade Grau I</div>
-
-            <div><span style="display:inline-block;width:18px;height:18px;background:#F44336;border-radius:4px;margin-right:8px;"></span> <strong>35,0 a 39,9</strong> — Obesidade Grau II</div>
-
-            <div><span style="display:inline-block;width:18px;height:18px;background:#9C27B0;border-radius:4px;margin-right:8px;"></span> <strong>40 ou mais</strong> — Obesidade Grau III</div>
-        </div>
-    `;
-
-    pesos.forEach((p, i) => {
-
-        const imc = parseFloat(p.imc);
-
-        let cor = "#4CAF50";
-
-        if (imc < 18.5) {
-            cor = "#4DA6FF";
-        } else if (imc < 25) {
-            cor = "#4CAF50";
-        } else if (imc < 30) {
-            cor = "#FFD54F";
-        } else if (imc < 35) {
-            cor = "#FF9800";
-        } else if (imc < 40) {
-            cor = "#F44336";
-        } else {
-            cor = "#9C27B0";
-        }
+        let lista = document.getElementById("listaPeso");
+        lista.innerHTML = "";
 
         lista.innerHTML += `
-            <div class="registro-item"
-                 style="
-                    border-left:8px solid ${cor};
-                    background:${cor}15;
-                    margin-bottom:8px;
-                    border-radius:8px;
-                 ">
-                <span>
-                    <strong>${p.data}</strong><br>
-                    ${p.peso} kg — <strong>IMC: ${p.imc}</strong>
-                </span>
-                <button onclick="apagarPeso(${i})">X</button>
+            <div style="margin-bottom:15px; padding:12px; background:#f8f8f8; border-radius:10px; border:1px solid #ddd; font-size:14px; line-height:1.8; text-align: left;">
+                <strong style="display:block; margin-bottom:8px;">📊 Classificação do IMC</strong>
+                <div><span style="display:inline-block;width:18px;height:18px;background:#4DA6FF;border-radius:4px;margin-right:8px;vertical-align:middle;"></span> Abaixo de <strong>18,5</strong> — Abaixo do peso</div>
+                <div><span style="display:inline-block;width:18px;height:18px;background:#4CAF50;border-radius:4px;margin-right:8px;vertical-align:middle;"></span> <strong>18,5 a 24,9</strong> — Peso ideal</div>
+                <div><span style="display:inline-block;width:18px;height:18px;background:#FFD54F;border-radius:4px;margin-right:8px;vertical-align:middle;"></span> <strong>25,0 a 29,9</strong> — Sobrepeso</div>
+                <div><span style="display:inline-block;width:18px;height:18px;background:#FF9800;border-radius:4px;margin-right:8px;vertical-align:middle;"></span> <strong>30,0 a 34,9</strong> — Obesidade Grau I</div>
+                <div><span style="display:inline-block;width:18px;height:18px;background:#F44336;border-radius:4px;margin-right:8px;vertical-align:middle;"></span> <strong>35,0 a 39,9</strong> — Obesidade Grau II</div>
+                <div><span style="display:inline-block;width:18px;height:18px;background:#9C27B0;border-radius:4px;margin-right:8px;vertical-align:middle;"></span> <strong>40 ou mais</strong> — Obesidade Grau III</div>
             </div>
         `;
-    });
-}
+
+        pesos.forEach((p, i) => {
+            const imc = parseFloat(p.imc);
+            let cor = "#4CAF50";
+
+            if (imc < 18.5) { cor = "#4DA6FF"; } 
+            else if (imc < 25) { cor = "#4CAF50"; } 
+            else if (imc < 30) { cor = "#FFD54F"; } 
+            else if (imc < 35) { cor = "#FF9800"; } 
+            else if (imc < 40) { cor = "#F44336"; } 
+            else { cor = "#9C27B0"; }
+
+            lista.innerHTML += `
+                <div class="registro-item" style="border-left:8px solid ${cor}; background:${cor}15; margin-bottom:8px; border-radius:8px;">
+                    <span>
+                        <strong>${p.data}</strong><br>
+                        ${p.peso} kg — <strong>IMC: ${p.imc}</strong>
+                    </span>
+                    <button onclick="apagarPeso(${i})">X</button>
+                </div>
+            `;
+        });
+    }
+
     function apagarPeso(i) {
         pesos.splice(i, 1);
         localStorage.setItem("pesos", JSON.stringify(pesos));
@@ -419,6 +345,8 @@
                     label: "Peso (kg)",
                     data: pesos.map(p => p.peso),
                     borderWidth: 3,
+                    borderColor: '#3cb371',
+                    backgroundColor: 'rgba(60, 179, 113, 0.1)'
                 }]
             },
             options: {
@@ -428,172 +356,65 @@
             }
         });
     }
-function salvarFoto(){
 
-    const arquivo = document.getElementById("fotoInput").files[0];
-    const data = document.getElementById("dataFoto").value;
+    function salvarFoto(){
+        const arquivo = document.getElementById("fotoInput").files[0];
+        const data = document.getElementById("dataFoto").value;
 
-    if(!arquivo || !data){
-        alert("Escolha a data e a foto.");
-        return;
+        if(!arquivo || !data){
+            alert("Escolha a data e a foto.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e){
+            fotos.push({
+                data: data,
+                imagem: e.target.result
+            });
+            localStorage.setItem("fotos",JSON.stringify(fotos));
+            carregarFotos();
+            document.getElementById("fotoInput").value="";
+        }
+        reader.readAsDataURL(arquivo);
     }
 
-    const reader = new FileReader();
+    function carregarFotos(){
+        let galeria = document.getElementById("galeriaFotos");
+        galeria.innerHTML = "";
 
-    reader.onload=function(e){
-
-        fotos.push({
-            data:data,
-            imagem:e.target.result
+        fotos.forEach((foto, index) => {
+            galeria.innerHTML += `
+                <div style="background:white; margin-bottom:20px; border-radius:12px; padding:12px; box-shadow:0 2px 8px rgba(0,0,0,.15); text-align: left;">
+                    <strong>${foto.data}</strong>
+                    <br><br>
+                    <img src="${foto.imagem}" style="width:100%; border-radius:10px; cursor:pointer;" onclick="window.open('${foto.imagem}')">
+                    <button style="margin-top:10px; background:#ff4d4d; color:white; width:100%; padding:10px; border:none; border-radius:8px; font-weight: bold;" onclick="apagarFoto(${index})">
+                        Excluir
+                    </button>
+                </div>
+            `;
         });
-
-        localStorage.setItem("fotos",JSON.stringify(fotos));
-
-        carregarFotos();
-
-        document.getElementById("fotoInput").value="";
     }
 
-    reader.readAsDataURL(arquivo);
+    function apagarFoto(i){
+        fotos.splice(i,1);
+        localStorage.setItem("fotos",JSON.stringify(fotos));
+        carregarFotos();
+    }
 
-}
-
-function carregarFotos(){
-
-    let galeria=document.getElementById("galeriaFotos");
-
-    galeria.innerHTML="";
-
-    fotos.forEach((foto,index)=>{
-
-        galeria.innerHTML+=`
-
-        <div style="
-            background:white;
-            margin-bottom:20px;
-            border-radius:12px;
-            padding:12px;
-            box-shadow:0 2px 8px rgba(0,0,0,.15);
-        ">
-
-            <strong>${foto.data}</strong>
-
-            <br><br>
-
-            <img
-                src="${foto.imagem}"
-                style="
-                    width:100%;
-                    border-radius:10px;
-                    cursor:pointer;
-                "
-                onclick="window.open('${foto.imagem}')">
-
-            <button
-                style="
-                    margin-top:10px;
-                    background:#ff4d4d;
-                    color:white;
-                    width:100%;
-                    padding:10px;
-                    border:none;
-                    border-radius:8px;
-                "
-                onclick="apagarFoto(${index})">
-
-                Excluir
-
-            </button>
-
-        </div>
-
-        `;
-
-});
-
-}
-
-function apagarFoto(i){
-
-    fotos.splice(i,1);
-
-    localStorage.setItem("fotos",JSON.stringify(fotos));
-
-    carregarFotos();
-
-}
     /* =====================================
-             FUNÇÕES TREINOS (originais)
+             FUNÇÕES TREINOS
     ===================================== */
-
     const treinosSemana = {
-    1: `
-        <h3>🔥 SEGUNDA — TREINO A (Inferiores/Glúteos)</h3>
-        <strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>
-        1. Agachamento no banco – 3x12<br>
-        2. Leg press – 3x12<br>
-        3. Cadeira abdutora – 3x15<br>
-        4. Mesa flexora – 3x12<br>
-        5. Avanço estático – 3x10 por perna<br>
-        6. Elevação pélvica – 3x12<br><br>
-        <strong>🚶‍♀️ ESTEIRA — 15 min</strong><br>
-        • Ritmo confortável a moderado<br>
-        • Inclinação opcional 1–3%
-    `,
-    2: `
-        <h3>🔥 TERÇA — TREINO B (Superiores)</h3>
-        <strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>
-        1. Puxada frontal – 3x12<br>
-        2. Remada baixa – 3x12<br>
-        3. Supino máquina – 3x10<br>
-        4. Desenvolvimento ombro – 3x10<br>
-        5. Tríceps corda – 3x12<br>
-        6. Rosca direta – 3x12<br>
-        7. Prancha – 2x30s<br><br>
-        <strong>🚶‍♀️ ESTEIRA — 15 min</strong>
-    `,
-    3: `
-        <h3>🔥 QUARTA — TREINO C (Inferiores + Abdome)</h3>
-        <strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>
-        1. Cadeira extensora – 3x12<br>
-        2. Agachamento sumô com halter – 3x12<br>
-        3. Stiff com halteres – 3x12<br>
-        4. Glúteo no cabo/caneleira – 3x12 cada perna<br>
-        5. Cadeira abdutora – 3x15<br>
-        6. Abdômen prancha inclinada – 2x15<br>
-        7. Prancha lateral – 2x20s<br><br>
-        <strong>🚶‍♀️ ESTEIRA — 15 min</strong>
-    `,
-    4: `
-        <h3>🔥 QUINTA — TREINO A (Progressão leve)</h3>
-        <strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>
-        Segunda-feira + progressão suave:<br>
-        ➡️ +1–2 repetições OU +1–2 kg em 1 exercício<br>
-        Tudo no amor, nada no desespero. 😍<br><br>
-
-        1. Agachamento no banco – 3x12<br>
-        2. Leg press – 3x12<br>
-        3. Cadeira abdutora – 3x15<br>
-        4. Mesa flexora – 3x12<br>
-        5. Avanço estático – 3x10 por perna<br>
-        6. Elevação pélvica – 3x12<br><br>
-        <strong>🚶‍♀️ ESTEIRA — 15 min</strong>
-    `,
-    5: `
-        <h3>🔥 SEXTA — TREINO B (Funcional + Superior leve)</h3>
-        <strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>
-        1. Agachamento no banco – 2x15<br>
-        2. Remada baixa – 2x12<br>
-        3. Elevação pélvica – 2x15<br>
-        4. Tríceps corda – 2x12<br>
-        5. Abdômen supra – 2x15<br>
-        6. Prancha – 30s<br>
-        7. Desenvolvimento ombro – 2x12<br><br>
-        <strong>🚶‍♀️ ESTEIRA — 15 min</strong>
-    `,
-    6: "<h3>✨ SÁBADO — Livre</h3> Caminhada leve, alongamento, yoga… 🌿",
-    0: "<h3>✨ DOMINGO — Descanso</h3> Recuperar energias 💙"
-};
+        1: `<h3>🔥 SEGUNDA — TREINO A (Inferiores/Glúteos)</h3><strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>1. Agachamento no banco – 3x12<br>2. Leg press – 3x12<br>3. Cadeira abdutora – 3x15<br>4. Mesa flexora – 3x12<br>5. Avanço estático – 3x10 por perna<br>6. Elevação pélvica – 3x12<br><br><strong>🚶‍♀️ ESTEIRA — 15 min</strong><br>• Ritmo confortável a moderado<br>• Inclinação opcional 1–3%`,
+        2: `<h3>🔥 TERÇA — TREINO B (Superiores)</h3><strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>1. Puxada frontal – 3x12<br>2. Remada baixa – 3x12<br>3. Supino máquina – 3x10<br>4. Desenvolvimento ombro – 3x10<br>5. Tríceps corda – 3x12<br>6. Rosca direta – 3x12<br>7. Prancha – 2x30s<br><br><strong>🚶‍♀️ ESTEIRA — 15 min</strong>`,
+        3: `<h3>🔥 QUARTA — TREINO C (Inferiores + Abdome)</h3><strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>1. Cadeira extensora – 3x12<br>2. Agachamento sumô com halter – 3x12<br>3. Stiff com halteres – 3x12<br>4. Glúteo no cabo/caneleira – 3x12 cada perna<br>5. Cadeira abdutora – 3x15<br>6. Abdômen prancha inclinada – 2x15<br>7. Prancha lateral – 2x20s<br><br><strong>🚶‍♀️ ESTEIRA — 15 min</strong>`,
+        4: `<h3>🔥 QUINTA — TREINO A (Progressão leve)</h3><strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>Segunda-feira + progressão suave:<br>➡️ +1–2 repetições OU +1–2 kg em 1 exercício<br>Tudo no amor, nada no desespero. 😍<br><br>1. Agachamento no banco – 3x12<br>2. Leg press – 3x12<br>3. Cadeira abdutora – 3x15<br>4. Mesa flexora – 3x12<br>5. Avanço estático – 3x10 por perna<br>6. Elevação pélvica – 3x12<br><br><strong>🚶‍♀️ ESTEIRA — 15 min</strong>`,
+        5: `<h3>🔥 SEXTA — TREINO B (Funcional + Superior leve)</h3><strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>1. Agachamento no banco – 2x15<br>2. Remada baixa – 2x12<br>3. Elevação pélvica – 2x15<br>4. Tríceps corda – 2x12<br>5. Abdômen supra – 2x15<br>6. Prancha – 30s<br>7. Desenvolvimento ombro – 2x12<br><br><strong>🚶‍♀️ ESTEIRA — 15 min</strong>`,
+        6: "<h3>✨ SÁBADO — Livre</h3> Caminhada leve, alongamento, yoga… 🌿",
+        0: "<h3>✨ DOMINGO — Descanso</h3> Recuperar energias 💙"
+    };
 
     function mostrarTreinoDia() {
         const hoje = new Date().getDay();
@@ -611,11 +432,8 @@ function apagarFoto(i){
 
     function atualizarTela() {
         document.getElementById("contador").textContent = contador;
-        document.getElementById("faltamDias").textContent =
-            diasFaltando() > 0 ? `Faltam ${diasFaltando()} dias para a meta` : "Meta alcançada! 🎉🔥";
-
-        document.getElementById("progressFill").style.width =
-            (contador / META * 100) + "%";
+        document.getElementById("faltamDias").textContent = diasFaltando() > 0 ? `Faltam ${diasFaltando()} dias para a meta` : "Meta alcançada! 🎉🔥";
+        document.getElementById("progressFill").style.width = (contador / META * 100) + "%";
 
         atualizarTema();
         carregarListaTreinos();
@@ -655,11 +473,10 @@ function apagarFoto(i){
     function carregarListaTreinos() {
         let lista = document.getElementById("historicoLista");
         lista.innerHTML = "";
-
         historico.forEach((r, i) => {
             lista.innerHTML += `
                 <div class="registro-item">
-                    ${r.data}
+                    <span>${r.data}</span>
                     <button onclick="apagarTreino(${i})">Excluir</button>
                 </div>
             `;
@@ -684,7 +501,7 @@ function apagarFoto(i){
         let dados = new Array(12).fill(0);
 
         historico.forEach(r => {
-            let mes = new Date(r.data).getMonth();
+            let mes = new Date(r.data + 'T00:00:00').getMonth(); // Adicionado timezone seguro para o Safari/Chrome
             dados[mes]++;
         });
 
@@ -696,7 +513,8 @@ function apagarFoto(i){
                 labels: meses,
                 datasets: [{
                     label: "Treinos no mês",
-                    data: dados
+                    data: dados,
+                    backgroundColor: '#4a57ff'
                 }]
             },
             options: {
@@ -706,10 +524,12 @@ function apagarFoto(i){
         });
     }
 
+    // Inicialização da tela
     contador = historico.length;
     atualizarTela();
     carregarListaPeso();
     atualizarGraficoPeso();
+    carregarInjecoes();
     carregarFotos();
 </script>
 
