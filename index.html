@@ -137,6 +137,7 @@
         <div class="tab active" onclick="abrirAba('treinos')" id="tabTreinos">Treinos</div>
         <div class="tab" onclick="abrirAba('peso')" id="tabPeso">Peso & IMC</div>
         <div class="tab" onclick="abrirAba('inj')" id="tabInj">Injeções</div>
+        <div class="tab" onclick="abrirAba('fotos')" id="tabFotos"> 📷 Evolução</div>
     </div>
 
     <!-- ABA TREINOS -->
@@ -195,7 +196,29 @@
         <div class="historic-box" id="listaInjecoes"></div>
 
     </div>
+    
+<!-- ABA EVOLUÇÃO -->
+<div id="abaFotos" style="display:none;">
 
+    <h2>📷 Evolução do Corpo</h2>
+
+    <input type="date" id="dataFoto"
+           style="width:100%;padding:10px;">
+
+    <input type="file"
+           id="fotoInput"
+           accept="image/*"
+           style="width:100%;margin-top:10px;">
+
+    <button class="btn-save" onclick="salvarFoto()">
+        Salvar Foto
+    </button>
+
+    <div id="galeriaFotos"
+         style="margin-top:20px;">
+    </div>
+
+</div>
 </div>
 
 <!-- Modal Treino -->
