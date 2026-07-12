@@ -196,11 +196,11 @@
         <div class="historic-box" id="listaInjecoes"></div>
 
     </div>
-    
+
 <!-- ABA EVOLUÇÃO -->
 <div id="abaFotos" style="display:none;">
 
-    <h2>📷 Evolução do Corpo</h2>
+    <h2> Evolução do Corpo</h2>
 
     <input type="date" id="dataFoto"
            style="width:100%;padding:10px;">
@@ -220,7 +220,100 @@
 
 </div>
 </div>
+function salvarFoto(){
 
+    const arquivo = document.getElementById("fotoInput").files[0];
+    const data = document.getElementById("dataFoto").value;
+
+    if(!arquivo || !data){
+        alert("Escolha a data e a foto.");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload=function(e){
+
+        fotos.push({
+            data:data,
+            imagem:e.target.result
+        });
+
+        localStorage.setItem("fotos",JSON.stringify(fotos));
+
+        carregarFotos();
+
+        document.getElementById("fotoInput").value="";
+    }
+
+    reader.readAsDataURL(arquivo);
+
+}
+
+function carregarFotos(){
+
+    let galeria=document.getElementById("galeriaFotos");
+
+    galeria.innerHTML="";
+
+    fotos.forEach((foto,index)=>{
+
+        galeria.innerHTML+=`
+
+        <div style="
+            background:white;
+            margin-bottom:20px;
+            border-radius:12px;
+            padding:12px;
+            box-shadow:0 2px 8px rgba(0,0,0,.15);
+        ">
+
+            <strong>${foto.data}</strong>
+
+            <br><br>
+
+            <img
+                src="${foto.imagem}"
+                style="
+                    width:100%;
+                    border-radius:10px;
+                    cursor:pointer;
+                "
+                onclick="window.open('${foto.imagem}')">
+
+            <button
+                style="
+                    margin-top:10px;
+                    background:#ff4d4d;
+                    color:white;
+                    width:100%;
+                    padding:10px;
+                    border:none;
+                    border-radius:8px;
+                "
+                onclick="apagarFoto(${index})">
+
+                Excluir
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+function apagarFoto(i){
+
+    fotos.splice(i,1);
+
+    localStorage.setItem("fotos",JSON.stringify(fotos));
+
+    carregarFotos();
+
+}
 <!-- Modal Treino -->
 <div id="modal" style="
     display:none; position:fixed; top:0; left:0; width:100%; height:100%;
@@ -245,18 +338,29 @@
     let historico = JSON.parse(localStorage.getItem("treinos")) || [];
     let pesos = JSON.parse(localStorage.getItem("pesos")) || [];
     let injecoes = JSON.parse(localStorage.getItem("injecoes")) || [];
-
+    let fotos = JSON.parse(localStorage.getItem("fotos")) || [];
     let grafico, graficoPeso;
 
-    function abrirAba(aba) {
-        document.getElementById("abaTreinos").style.display = (aba === "treinos" ? "block" : "none");
-        document.getElementById("abaPeso").style.display = (aba === "peso" ? "block" : "none");
-        document.getElementById("abaInj").style.display = (aba === "inj" ? "block" : "none");
+   function abrirAba(aba) {
 
-        document.getElementById("tabTreinos").classList.toggle("active", aba === "treinos");
-        document.getElementById("tabPeso").classList.toggle("active", aba === "peso");
-        document.getElementById("tabInj").classList.toggle("active", aba === "inj");
-    }
+    document.getElementById("abaTreinos").style.display =
+        aba==="treinos" ? "block":"none";
+
+    document.getElementById("abaPeso").style.display =
+        aba==="peso" ? "block":"none";
+
+    document.getElementById("abaInj").style.display =
+        aba==="inj" ? "block":"none";
+
+    document.getElementById("abaFotos").style.display =
+        aba==="fotos" ? "block":"none";
+
+    document.getElementById("tabTreinos").classList.toggle("active",aba==="treinos");
+    document.getElementById("tabPeso").classList.toggle("active",aba==="peso");
+    document.getElementById("tabInj").classList.toggle("active",aba==="inj");
+    document.getElementById("tabFotos").classList.toggle("active",aba==="fotos");
+
+}
 
     /* =====================================
              FUNÇÕES – INJEÇÕES
@@ -313,6 +417,7 @@
 
         carregarListaPeso();
         atualizarGraficoPeso();
+        carregarFotos();
 
         document.getElementById("pesoInput").value = "";
     }
