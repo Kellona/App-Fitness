@@ -20,8 +20,7 @@
     }
 
        .container{
-        width:460px;
-        max-width:95%;
+        width:380px;
         background: white;
         padding: 30px;
         border-radius: 18px;
@@ -32,8 +31,7 @@
     h1 { font-size: 26px; margin-bottom: 5px; }
 
     .tabs {
-        display:grid;
-        grid-template-columns:repeat(4,1fr);
+        display:flex;
         margin-bottom: 20px;
         border-bottom: 2px solid #ddd;
     }
@@ -139,7 +137,7 @@
         <div class="tab active" onclick="abrirAba('treinos')" id="tabTreinos">Treinos</div>
         <div class="tab" onclick="abrirAba('peso')" id="tabPeso">Peso & IMC</div>
         <div class="tab" onclick="abrirAba('inj')" id="tabInj">Injeções</div>
-        <div class="tab" onclick="abrirAba('fotos')" id="tabFotos"> 📷 Evolução</div>
+        <div class="tab" onclick="abrirAba('fotos')" id="tabFotos"> Evolução</div>
     </div>
 
     <!-- ABA TREINOS -->
@@ -199,10 +197,10 @@
 
     </div>
 
-<!-- ABA EVOLUÇÃO -->
+    <!-- ABA EVOLUÇÃO -->
 <div id="abaFotos" style="display:none;">
 
-    <h2> Evolução do Corpo</h2>
+    <h2>📷 Evolução do Corpo</h2>
 
     <input type="date" id="dataFoto"
            style="width:100%;padding:10px;">
@@ -220,7 +218,6 @@
          style="margin-top:20px;">
     </div>
 
-</div>
 </div>
 
 }
@@ -433,17 +430,99 @@
         });
     }
 function salvarFoto(){
-...
+
+    const arquivo = document.getElementById("fotoInput").files[0];
+    const data = document.getElementById("dataFoto").value;
+
+    if(!arquivo || !data){
+        alert("Escolha a data e a foto.");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload=function(e){
+
+        fotos.push({
+            data:data,
+            imagem:e.target.result
+        });
+
+        localStorage.setItem("fotos",JSON.stringify(fotos));
+
+        carregarFotos();
+
+        document.getElementById("fotoInput").value="";
+    }
+
+    reader.readAsDataURL(arquivo);
+
 }
 
 function carregarFotos(){
-...
+
+    let galeria=document.getElementById("galeriaFotos");
+
+    galeria.innerHTML="";
+
+    fotos.forEach((foto,index)=>{
+
+        galeria.innerHTML+=`
+
+        <div style="
+            background:white;
+            margin-bottom:20px;
+            border-radius:12px;
+            padding:12px;
+            box-shadow:0 2px 8px rgba(0,0,0,.15);
+        ">
+
+            <strong>${foto.data}</strong>
+
+            <br><br>
+
+            <img
+                src="${foto.imagem}"
+                style="
+                    width:100%;
+                    border-radius:10px;
+                    cursor:pointer;
+                "
+                onclick="window.open('${foto.imagem}')">
+
+            <button
+                style="
+                    margin-top:10px;
+                    background:#ff4d4d;
+                    color:white;
+                    width:100%;
+                    padding:10px;
+                    border:none;
+                    border-radius:8px;
+                "
+                onclick="apagarFoto(${index})">
+
+                Excluir
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
 }
 
 function apagarFoto(i){
-...
-}
 
+    fotos.splice(i,1);
+
+    localStorage.setItem("fotos",JSON.stringify(fotos));
+
+    carregarFotos();
+
+}
     /* =====================================
              FUNÇÕES TREINOS (originais)
     ===================================== */
