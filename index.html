@@ -303,32 +303,61 @@
     let lista = document.getElementById("listaPeso");
     lista.innerHTML = "";
 
+    // LEGENDA
+    lista.innerHTML += `
+        <div style="
+            margin-bottom:15px;
+            padding:12px;
+            background:#f8f8f8;
+            border-radius:10px;
+            border:1px solid #ddd;
+            font-size:14px;
+            line-height:1.8;
+        ">
+            <strong style="display:block; margin-bottom:8px;">📊 Classificação do IMC</strong>
+
+            <div><span style="display:inline-block;width:18px;height:18px;background:#4DA6FF;border-radius:4px;margin-right:8px;"></span> Abaixo de <strong>18,5</strong> — Abaixo do peso</div>
+
+            <div><span style="display:inline-block;width:18px;height:18px;background:#4CAF50;border-radius:4px;margin-right:8px;"></span> <strong>18,5 a 24,9</strong> — Peso ideal</div>
+
+            <div><span style="display:inline-block;width:18px;height:18px;background:#FFD54F;border-radius:4px;margin-right:8px;"></span> <strong>25,0 a 29,9</strong> — Sobrepeso</div>
+
+            <div><span style="display:inline-block;width:18px;height:18px;background:#FF9800;border-radius:4px;margin-right:8px;"></span> <strong>30,0 a 34,9</strong> — Obesidade Grau I</div>
+
+            <div><span style="display:inline-block;width:18px;height:18px;background:#F44336;border-radius:4px;margin-right:8px;"></span> <strong>35,0 a 39,9</strong> — Obesidade Grau II</div>
+
+            <div><span style="display:inline-block;width:18px;height:18px;background:#9C27B0;border-radius:4px;margin-right:8px;"></span> <strong>40 ou mais</strong> — Obesidade Grau III</div>
+        </div>
+    `;
+
     pesos.forEach((p, i) => {
 
         const imc = parseFloat(p.imc);
 
-        let cor = "#4CAF50"; // Verde (peso normal)
+        let cor = "#4CAF50";
 
         if (imc < 18.5) {
-            cor = "#4DA6FF"; // Azul
+            cor = "#4DA6FF";
         } else if (imc < 25) {
-            cor = "#4CAF50"; // Verde
+            cor = "#4CAF50";
         } else if (imc < 30) {
-            cor = "#FFD54F"; // Amarelo
+            cor = "#FFD54F";
         } else if (imc < 35) {
-            cor = "#FF9800"; // Laranja
+            cor = "#FF9800";
         } else if (imc < 40) {
-            cor = "#F44336"; // Vermelho
+            cor = "#F44336";
         } else {
-            cor = "#9C27B0"; // Roxo
+            cor = "#9C27B0";
         }
 
         lista.innerHTML += `
             <div class="registro-item"
-                 style="border-left:8px solid ${cor};
-                        background:${cor}15;
-                        margin-bottom:8px;
-                        border-radius:8px;">
+                 style="
+                    border-left:8px solid ${cor};
+                    background:${cor}15;
+                    margin-bottom:8px;
+                    border-radius:8px;
+                 ">
                 <span>
                     <strong>${p.data}</strong><br>
                     ${p.peso} kg — <strong>IMC: ${p.imc}</strong>
@@ -338,7 +367,6 @@
         `;
     });
 }
-
     function apagarPeso(i) {
         pesos.splice(i, 1);
         localStorage.setItem("pesos", JSON.stringify(pesos));
