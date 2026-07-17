@@ -180,13 +180,59 @@
     </div>
 
     <!-- ABA INJEÇÕES -->
-    <div id="abaInj" style="display:none;">
-        <h2>Registrar Injeção</h2>
-        <button class="btn-inj" onclick="registrarInjecao()">Registrar Injeção da Semana</button>
+    <h2>💉 Aplicações</h2>
 
-        <h3 style="margin-top:20px;">Histórico</h3>
-        <div class="historic-box" id="listaInjecoes"></div>
-    </div>
+<label>Data da aplicação</label>
+
+<input
+    type="date"
+    id="dataInjecao"
+    style="width:100%;padding:10px;">
+
+<label style="display:block;margin-top:15px;">
+Dose
+</label>
+
+<select
+    id="doseInjecao"
+    style="width:100%;padding:10px;">
+
+    <option value="2,5 mg">2,5 mg</option>
+    <option value="5 mg">5 mg</option>
+    <option value="7,5 mg">7,5 mg</option>
+    <option value="10 mg">10 mg</option>
+    <option value="12,5 mg">12,5 mg</option>
+    <option value="15 mg">15 mg</option>
+
+</select>
+
+<button
+    class="btn-inj"
+    onclick="registrarInjecao()">
+
+    Salvar Aplicação
+
+</button>
+
+<div
+    id="proximaAplicacao"
+    style="
+        margin-top:20px;
+        padding:15px;
+        border-radius:10px;
+        background:#eef3ff;
+        font-weight:bold;
+    ">
+</div>
+
+<h3 style="margin-top:20px;">
+Histórico
+</h3>
+
+<div
+    class="historic-box"
+    id="listaInjecoes">
+</div>
 
     <!-- ABA EVOLUÇÃO -->
     <div id="abaFotos" style="display:none;">
@@ -234,26 +280,129 @@
     /* =====================================
              FUNÇÕES – INJEÇÕES
     ===================================== */
-    function registrarInjecao() {
-        const hoje = new Date().toISOString().split("T")[0];
-        injecoes.push({ data: hoje });
-        localStorage.setItem("injecoes", JSON.stringify(injecoes));
-        carregarInjecoes();
-        alert("Injeção registrada com sucesso!");
+    function registrarInjecao(){
+
+    const data=document.getElementById("dataInjecao").value;
+    const dose=document.getElementById("doseInjecao").value;
+
+    if(!data){
+
+        alert("Escolha a data.");
+
+        return;
+
     }
 
-    function carregarInjecoes() {
-        let lista = document.getElementById("listaInjecoes");
-        lista.innerHTML = "";
-        injecoes.forEach((inj, i) => {
-            lista.innerHTML += `
-                <div class="registro-item">
-                    <span>${inj.data}</span>
-                    <button onclick="apagarInjecao(${i})">X</button>
-                </div>
-            `;
-        });
+    injecoes.push({
+
+        data:data,
+
+        dose:dose
+
+    });
+
+    injecoes.sort((a,b)=>new Date(b.data)-new Date(a.data));
+
+    localStorage.setItem(
+        "injecoes",
+        JSON.stringify(injecoes)
+    );
+
+    carregarInjecoes();
+
+}
+    function carregarInjecoes(){
+
+    let lista=document.getElementById("listaInjecoes");
+
+    lista.innerHTML="";
+
+    injecoes.sort((a,b)=>new Date(b.data)-new Date(a.data));
+
+    injecoes.forEach((inj,i)=>{
+
+        lista.innerHTML+=`
+
+        <div class="registro-item">
+
+            <span>
+
+                <strong>${inj.data}</strong>
+
+                <br>
+
+                💉 ${inj.dose}
+
+            </span>
+
+            <button onclick="apagarInjecao(${i})">
+
+                X
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+    atualizarProximaAplicacao();
+
+}
+
+function atualizarProximaAplicacao(){
+
+    let caixa=document.getElementById("proximaAplicacao");
+
+    if(injecoes.length===0){
+
+        caixa.innerHTML="Nenhuma aplicação registrada.";
+
+        return;
+
     }
+
+    let ultima=new Date(injecoes[0].data);
+
+    let proxima=new Date(ultima);
+
+    proxima.setDate(proxima.getDate()+7);
+
+    let hoje=new Date();
+
+    hoje.setHours(0,0,0,0);
+
+    let dias=Math.ceil(
+        (proxima-hoje)/(1000*60*60*24)
+    );
+
+    if(dias>0){
+
+        caixa.innerHTML=
+        `💉 Próxima aplicação em <strong>${dias}</strong> dia(s)<br><br>
+        📅 ${proxima.toLocaleDateString("pt-BR")}`;
+
+    }
+
+    else if(dias===0){
+
+        caixa.innerHTML=
+        `🔔 <span style="color:red;">
+        Hoje é o dia da aplicação!
+        </span>`;
+
+    }
+
+    else{
+
+        caixa.innerHTML=
+        `⚠️ Você está com <strong>${Math.abs(dias)}</strong>
+        dia(s) de atraso na aplicação.`;
+
+    }
+
+}
 
     function apagarInjecao(i) {
         injecoes.splice(i, 1);
