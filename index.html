@@ -180,59 +180,19 @@
     </div>
 
     <!-- ABA INJEÇÕES -->
+    <div id="abaInj" style="display:none;">
+
     <h2>💉 Aplicações</h2>
 
-<label>Data da aplicação</label>
+    <!-- todo o conteúdo da aba -->
 
-<input
-    type="date"
-    id="dataInjecao"
-    style="width:100%;padding:10px;">
+    <div id="proximaAplicacao"></div>
 
-<label style="display:block;margin-top:15px;">
-Dose
-</label>
+    <h3>Histórico</h3>
 
-<select
-    id="doseInjecao"
-    style="width:100%;padding:10px;">
+    <div class="historic-box" id="listaInjecoes"></div>
 
-    <option value="2,5 mg">2,5 mg</option>
-    <option value="5 mg">5 mg</option>
-    <option value="7,5 mg">7,5 mg</option>
-    <option value="10 mg">10 mg</option>
-    <option value="12,5 mg">12,5 mg</option>
-    <option value="15 mg">15 mg</option>
-
-</select>
-
-<button
-    class="btn-inj"
-    onclick="registrarInjecao()">
-
-    Salvar Aplicação
-
-</button>
-
-<div
-    id="proximaAplicacao"
-    style="
-        margin-top:20px;
-        padding:15px;
-        border-radius:10px;
-        background:#eef3ff;
-        font-weight:bold;
-    ">
-</div>
-
-<h3 style="margin-top:20px;">
-Histórico
-</h3>
-
-<div
-    class="historic-box"
-    id="listaInjecoes">
-</div>
+</div> 
 
     <!-- ABA EVOLUÇÃO -->
     <div id="abaFotos" style="display:none;">
