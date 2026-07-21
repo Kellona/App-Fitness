@@ -1,113 +1,132 @@
 body {
-    margin: 0;
     font-family: Arial, sans-serif;
-    background: #fff4ea;
-}
-
-.navbar {
+    background-color: #f2f6ff;
+    
+    /* Marca d'água com ícones fitness em SVG */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" stroke="%234a57ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.08"><g transform="translate(15, 15) scale(1.2)"><path d="M6.5 6.5h11M6.5 17.5h11M4 9.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5zM2 10.5h2M20 10.5h2"/></g><g transform="translate(70, 20) scale(1.1)"><path d="M18 20a6 6 0 0 0-12 0"/><path d="M12 14v6"/><path d="M12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><circle cx="12" cy="17" r="1"/></g><g transform="translate(20, 70) scale(1.1)"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></g><g transform="translate(70, 70) scale(1.1)"><path d="M12 21a9 9 0 0 0 9-9c0-4.97-4.03-8-9-8s-9 3.03-9 8a9 9 0 0 0 9 9z"/><path d="M12 4v-2M10 2h4"/></g></svg>');
+    
+    background-repeat: repeat;
+    background-size: 140px 140px;
+    background-attachment: fixed;
+    
+    margin: 0;
+    padding: 20px 0;
     display: flex;
-    justify-content: space-around;
-    background: #e9a3d2;
-    padding: 10px;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
 }
 
-.navbar button {
+.container {
+    width: 380px;
     background: white;
-    border: none;
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+h1 { 
+    font-size: 26px; 
+    margin-bottom: 5px; 
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+}
+
+.tab {
+    flex: 1;
     padding: 10px;
-    font-size: 22px;
-    border-radius: 12px;
     cursor: pointer;
+    font-weight: bold;
+    color: #555;
 }
 
-.tela {
-    display: none;
-    padding: 20px;
+.tab.active {
+    color: #4a57ff;
+    border-bottom: 3px solid #4a57ff;
 }
 
-.tela.ativa {
-    display: block;
+.contador {
+    font-size: 60px;
+    font-weight: bold;
+    margin: 10px 0;
 }
 
-h1, h2 {
-    text-align: center;
-}
-
-.contador-grande {
-    font-size: 80px;
-    text-align: center;
+.faltam {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
     font-weight: bold;
 }
 
 .progress-bar {
     width: 100%;
-    background: #ddd;
-    height: 15px;
+    height: 14px;
+    background: #dedede;
     border-radius: 10px;
+    margin: 15px 0;
 }
 
 .progress-fill {
     height: 100%;
-    width: 0%;
     background: #4a57ff;
     border-radius: 10px;
-    transition: 0.4s;
-}
-
-.stats {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-}
-
-.stat-box {
-    width: 48%;
-    background: #ffe0d3;
-    padding: 15px;
-    border-radius: 10px;
-    text-align: center;
+    transition: width 0.3s;
+    width: 0%;
 }
 
 button {
     width: 100%;
-    padding: 14px;
-    border: none;
+    padding: 15px;
     margin-top: 10px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
+    border: none;
+    border-radius: 12px;
     cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
 }
 
-.btn-add {
-    background: #ff6f61;
-    color: white;
-}
+.btn-add    { background: #ff6f61; color: white; }
+.btn-save   { background: #3cb371; color: white; }
+.btn-reset  { background: #ffffff; border: 2px solid #555; }
+.btn-treino { background: #4a57ff; color: white; }
+.btn-inj    { background: #c23eff; color: white; }
 
-.btn-add:hover {
-    background: #435df1;
-}
-
-.btn-save {
-    background: #382396;
-    color: white;
-}
-
-.btn-reset {
-    background: white;
-    border: 2px solid #555;
-}
-
-textarea {
-    width: 100%;
-    height: 120px;
-    padding: 12px;
+.historic-box {
+    text-align: left;
+    margin-top: 25px;
+    padding: 15px;
+    background: #fafafa;
     border-radius: 10px;
-    border: 2px solid #ccc;
-    font-size: 16px;
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #e3e3e3;
 }
 
-ul {
-    list-style: none;
-    padding: 0;
+.registro-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
 }
+
+.registro-item button {
+    width: auto;
+    padding: 5px 10px;
+    margin-top: 0;
+    font-size: 12px;
+    border-radius: 6px;
+    background: #ff4f4f;
+    color: white;
+}
+
+.tema1 { background: linear-gradient(135deg,#ffecd2,#fcb69f); }
+.tema2 { background: linear-gradient(135deg,#d9a7c7,#fffcdc); }
+.tema3 { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
+.tema4 { background: linear-gradient(135deg,#f6d365,#fda085); }
+.tema5 { background: linear-gradient(135deg,#84fab0,#8fd3f4); }
