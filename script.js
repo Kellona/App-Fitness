@@ -11,11 +11,13 @@ function abrirAba(aba) {
     document.getElementById("abaPeso").style.display = aba === "peso" ? "block" : "none";
     document.getElementById("abaInj").style.display = aba === "inj" ? "block" : "none";
     document.getElementById("abaFotos").style.display = aba === "fotos" ? "block" : "none";
+    document.getElementById("abaNuvem").style.display = aba === "nuvem" ? "block" : "none";
 
     document.getElementById("tabTreinos").classList.toggle("active", aba === "treinos");
     document.getElementById("tabPeso").classList.toggle("active", aba === "peso");
     document.getElementById("tabInj").classList.toggle("active", aba === "inj");
     document.getElementById("tabFotos").classList.toggle("active", aba === "fotos");
+    document.getElementById("tabNuvem").classList.toggle("active", aba === "nuvem");
 }
 
 /* =====================================
