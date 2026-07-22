@@ -1,13 +1,8 @@
-/* 1. Reset global para evitar estouro de largura com padding */
-*, *::before, *::after {
-    box-sizing: border-box;
-}
-
 body {
     font-family: Arial, sans-serif;
-    background-color: #f2f6ff;
+    background: #f2f6ff;
     margin: 0;
-    padding: 15px 10px; /* Reduzido para caber melhor em telas menores */
+    padding: 20px 0;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -15,41 +10,28 @@ body {
 }
 
 .container {
-    width: 100%;
-    max-width: 380px; /* Permite encolher em celulares menores e limita a 380px em telas grandes */
-    background-color: #ffffff;
+    width: 380px;
+    background: white;
     padding: 30px;
     border-radius: 18px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     text-align: center;
-    margin: 0 auto; 
 }
 
-button {
-    width: 100%;
-    display: block;
-    box-sizing: border-box; 
-    padding: 14px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
+h1 { 
+    font-size: 26px; 
+    margin-bottom: 5px; 
 }
 
 .tabs {
     display: flex;
-    justify-content: space-around;
     margin-bottom: 20px;
     border-bottom: 2px solid #ddd;
 }
 
 .tab {
     flex: 1;
-    padding: 8px 4px;
-    font-size: 13px; 
-    text-align: center;
+    padding: 10px;
     cursor: pointer;
     font-weight: bold;
     color: #555;
