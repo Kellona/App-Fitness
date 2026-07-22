@@ -41,6 +41,7 @@ function registrarInjecao() {
 
 function carregarInjecoes() {
     let lista = document.getElementById("listaInjecoes");
+    if (!lista) return;
     lista.innerHTML = "";
 
     injecoes.sort((a, b) => new Date(b.data) - new Date(a.data));
@@ -62,6 +63,7 @@ function carregarInjecoes() {
 
 function atualizarProximaAplicacao() {
     let caixa = document.getElementById("proximaAplicacao");
+    if (!caixa) return;
 
     if (injecoes.length === 0) {
         caixa.innerHTML = "Nenhuma aplicação registrada.";
@@ -121,6 +123,7 @@ function calcularIMC(peso) {
 
 function carregarListaPeso() {
     let lista = document.getElementById("listaPeso");
+    if (!lista) return;
     lista.innerHTML = "";
 
     lista.innerHTML += `
@@ -166,9 +169,11 @@ function apagarPeso(i) {
 }
 
 function atualizarGraficoPeso() {
+    let el = document.getElementById("graficoPeso");
+    if (!el) return;
     if (graficoPeso) graficoPeso.destroy();
 
-    graficoPeso = new Chart(document.getElementById("graficoPeso"), {
+    graficoPeso = new Chart(el, {
         type: "line",
         data: {
             labels: pesos.map(p => p.data),
@@ -215,6 +220,7 @@ function salvarFoto() {
 
 function carregarFotos() {
     let galeria = document.getElementById("galeriaFotos");
+    if (!galeria) return;
     galeria.innerHTML = "";
 
     fotos.forEach((foto, index) => {
@@ -259,7 +265,8 @@ function mostrarTreinoDia() {
 function atualizarTema() {
     const temas = ["tema1", "tema2", "tema3", "tema4", "tema5"];
     let index = Math.floor(contador / 30) % temas.length;
-    document.getElementById("appContainer").className = "container " + temas[index];
+    let container = document.getElementById("appContainer");
+    if (container) container.className = "container " + temas[index];
 }
 
 function diasFaltando() { 
@@ -267,9 +274,13 @@ function diasFaltando() {
 }
 
 function atualizarTela() {
-    document.getElementById("contador").textContent = contador;
-    document.getElementById("faltamDias").textContent = diasFaltando() > 0 ? `Faltam ${diasFaltando()} dias para a meta` : "Meta alcançada! 🎉🔥";
-    document.getElementById("progressFill").style.width = (contador / META * 100) + "%";
+    let elContador = document.getElementById("contador");
+    let elFaltam = document.getElementById("faltamDias");
+    let elFill = document.getElementById("progressFill");
+
+    if (elContador) elContador.textContent = contador;
+    if (elFaltam) elFaltam.textContent = diasFaltando() > 0 ? `Faltam ${diasFaltando()} dias para a meta` : "Meta alcançada! 🎉🔥";
+    if (elFill) elFill.style.width = (contador / META * 100) + "%";
 
     atualizarTema();
     carregarListaTreinos();
@@ -308,6 +319,7 @@ function salvarTreinos() {
 
 function carregarListaTreinos() {
     let lista = document.getElementById("historicoLista");
+    if (!lista) return;
     lista.innerHTML = "";
     historico.forEach((r, i) => {
         lista.innerHTML += `
@@ -333,6 +345,9 @@ function resetar() {
 }
 
 function atualizarGraficoTreinos() {
+    let el = document.getElementById("graficoMensal");
+    if (!el) return;
+
     let meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
     let dados = new Array(12).fill(0);
 
@@ -343,7 +358,7 @@ function atualizarGraficoTreinos() {
 
     if (grafico) grafico.destroy();
 
-    grafico = new Chart(document.getElementById("graficoMensal"), {
+    grafico = new Chart(el, {
         type: "bar",
         data: {
             labels: meses,
@@ -360,25 +375,9 @@ function atualizarGraficoTreinos() {
     });
 }
 
-// Inicialização da tela ao carregar o script
-contador = historico.length;
-atualizarTela();
-carregarListaPeso();
-atualizarGraficoPeso();
-carregarInjecoes();
-carregarFotos();
-
-// =====================================
-//      SINCRONIZAÇÃO VIA GITHUB GIST
-// =====================================
-
-// Atualize a função abrirAba para incluir a aba 'nuvem'
-/* 
-  Na sua função abrirAba(aba) existente, certifique-se de adicionar:
-  document.getElementById("abaNuvem").style.display = aba === "nuvem" ? "block" : "none";
-  document.getElementById("tabNuvem").classList.toggle("active", aba === "nuvem");
-*/
-
+/* =====================================
+       SINCRONIZAÇÃO VIA GITHUB GIST
+===================================== */
 function salvarConfigNuvem() {
     const gistId = document.getElementById("gistIdInput").value.trim();
     const token = document.getElementById("gistTokenInput").value.trim();
@@ -394,8 +393,11 @@ function salvarConfigNuvem() {
 }
 
 function carregarConfigNuvem() {
-    document.getElementById("gistIdInput").value = localStorage.getItem("github_gist_id") || "";
-    document.getElementById("gistTokenInput").value = localStorage.getItem("github_token") || "";
+    let elGist = document.getElementById("gistIdInput");
+    let elToken = document.getElementById("gistTokenInput");
+
+    if (elGist) elGist.value = localStorage.getItem("github_gist_id") || "";
+    if (elToken) elToken.value = localStorage.getItem("github_token") || "";
 }
 
 async function uploadParaNuvem() {
@@ -407,7 +409,6 @@ async function uploadParaNuvem() {
         return;
     }
 
-    // Monta o objeto completo com todos os dados do App
     const dadosCompletos = {
         treinos: JSON.parse(localStorage.getItem("treinos")) || [],
         pesos: JSON.parse(localStorage.getItem("pesos")) || [],
@@ -419,7 +420,7 @@ async function uploadParaNuvem() {
         const response = await fetch(`https://api.github.com/gists/${gistId}`, {
             method: "PATCH",
             headers: {
-                "Authorization": `token ${token}`,
+                "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -442,56 +443,74 @@ async function uploadParaNuvem() {
     }
 }
 
-async function downloadDaNuvem() {
+async function downloadDaNuvem(manual = true) {
     const gistId = localStorage.getItem("github_gist_id");
     const token = localStorage.getItem("github_token");
 
     if (!gistId || !token) {
-        alert("Configure o ID do Gist e o Token primeiro na aba Nuvem!");
+        if (manual) alert("Configure o ID do Gist e o Token primeiro na aba Nuvem!");
         return;
     }
 
-    if (!confirm("Isso substituirá os dados locais pelos dados salvos na nuvem. Continuar?")) return;
+    if (manual && !confirm("Isso substituirá os dados locais pelos dados salvos na nuvem. Continuar?")) return;
 
     try {
-        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+        const response = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, {
             headers: {
-                "Authorization": `token ${token}`
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/vnd.github.v3+json"
             }
         });
 
         if (response.ok) {
             const data = await response.json();
-            const conteudo = JSON.parse(data.files["dados_fitness.json"].content);
+            const arquivoGist = data.files["dados_fitness.json"] || Object.values(data.files)[0];
 
-            // Atualiza o localStorage local
-            localStorage.setItem("treinos", JSON.stringify(conteudo.treinos || []));
-            localStorage.setItem("pesos", JSON.stringify(conteudo.pesos || []));
-            localStorage.setItem("injecoes", JSON.stringify(conteudo.injecoes || []));
-            localStorage.setItem("fotos", JSON.stringify(conteudo.fotos || []));
+            if (arquivoGist && arquivoGist.content) {
+                const conteudo = JSON.parse(arquivoGist.content);
 
-            // Recarrega as variáveis e a tela
-            historico = conteudo.treinos || [];
-            pesos = conteudo.pesos || [];
-            injecoes = conteudo.injecoes || [];
-            fotos = conteudo.fotos || [];
-            contador = historico.length;
+                localStorage.setItem("treinos", JSON.stringify(conteudo.treinos || []));
+                localStorage.setItem("pesos", JSON.stringify(conteudo.pesos || []));
+                localStorage.setItem("injecoes", JSON.stringify(conteudo.injecoes || []));
+                localStorage.setItem("fotos", JSON.stringify(conteudo.fotos || []));
 
-            atualizarTela();
-            carregarListaPeso();
-            atualizarGraficoPeso();
-            carregarInjecoes();
-            carregarFotos();
+                historico = conteudo.treinos || [];
+                pesos = conteudo.pesos || [];
+                injecoes = conteudo.injecoes || [];
+                fotos = conteudo.fotos || [];
+                contador = historico.length;
 
-            alert("🔄 Dados baixados e atualizados com sucesso!");
-        } else {
+                renderizarTudo();
+
+                if (manual) alert("🔄 Dados baixados e atualizados com sucesso!");
+            }
+        } else if (manual) {
             alert("❌ Erro ao baixar dados. Verifique seu ID e Token.");
         }
     } catch (erro) {
         console.error(erro);
-        alert("Erro de conexão ao baixar do GitHub.");
+        if (manual) alert("Erro de conexão ao baixar do GitHub.");
     }
 }
 
-// Chamar ao carregar a página para preencher os campos se já existirem
-carregarConfigNuvem();
+function renderizarTudo() {
+    contador = historico.length;
+    atualizarTela();
+    carregarListaPeso();
+    atualizarGraficoPeso();
+    carregarInjecoes();
+    carregarFotos();
+    carregarConfigNuvem();
+}
+
+/* =====================================
+         INICIALIZAÇÃO DA PÁGINA
+===================================== */
+document.addEventListener("DOMContentLoaded", () => {
+    renderizarTudo();
+
+    // Sincroniza em segundo plano ao abrir se já houver credenciais salvas
+    if (localStorage.getItem("github_gist_id") && localStorage.getItem("github_token")) {
+        downloadDaNuvem(false);
+    }
+});
