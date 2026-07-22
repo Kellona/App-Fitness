@@ -22,7 +22,6 @@
             <div class="tab active" onclick="abrirAba('treinos')" id="tabTreinos">Treinos</div>
             <div class="tab" onclick="abrirAba('peso')" id="tabPeso">Peso & IMC</div>
             <div class="tab" onclick="abrirAba('inj')" id="tabInj">Injeções</div>
-            <div class="tab" onclick="abrirAba('fotos')" id="tabFotos">Evolução</div>
             <div class="tab" onclick="abrirAba('nuvem')" id="tabNuvem">☁️ Nuvem</div>
         </div>
 
@@ -91,30 +90,20 @@
             <div class="historic-box" id="listaInjecoes"></div>
         </div>
 
-        <!-- ABA EVOLUÇÃO -->
-        <div id="abaFotos" style="display:none;">
-            <h2>Evolução do Corpo</h2>
-            <input type="date" id="dataFoto" style="width:100%;padding:10px; box-sizing: border-box;">
-            <input type="file" id="fotoInput" accept="image/*" style="width:100%;margin-top:10px; box-sizing: border-box;">
+        <!-- ABA NUVEM -->
+        <div id="abaNuvem" style="display:none;">
+            <h2>☁️ Sincronização GitHub</h2>
+            <p style="font-size: 13px; color: #666;">Configure para salvar seus dados na nuvem e acessar em qualquer dispositivo.</p>
 
-            <button class="btn-save" onclick="salvarFoto()">Salvar Foto</button>
-            <div id="galeriaFotos" style="margin-top:20px;"></div>
+            <input type="text" id="gistIdInput" placeholder="ID do Gist" style="width:100%; padding:10px; margin-bottom:10px; box-sizing: border-box;">
+            <input type="password" id="gistTokenInput" placeholder="GitHub Personal Token" style="width:100%; padding:10px; margin-bottom:10px; box-sizing: border-box;">
+
+            <button class="btn-save" onclick="salvarConfigNuvem()">Salvar Configurações</button>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+
+            <button class="btn-treino" onclick="uploadParaNuvem()">⬆️ Enviar dados para o GitHub</button>
+            <button class="btn-add" onclick="downloadDaNuvem(true)" style="margin-top: 10px;">⬇️ Baixar dados do GitHub</button>
         </div>
-
-        <!-- ABA Nuvem -->
-         <div id="abaNuvem" style="display:none;">
-    <h2>☁️ Sincronização GitHub</h2>
-    <p style="font-size: 13px; color: #666;">Configure para salvar seus dados na nuvem e acessar em qualquer dispositivo.</p>
-
-    <input type="text" id="gistIdInput" placeholder="ID do Gist" style="width:100%; padding:10px; margin-bottom:10px; box-sizing: border-box;">
-    <input type="password" id="gistTokenInput" placeholder="GitHub Personal Token" style="width:100%; padding:10px; margin-bottom:10px; box-sizing: border-box;">
-
-    <button class="btn-save" onclick="salvarConfigNuvem()">Salvar Configurações</button>
-    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
-
-    <button class="btn-treino" onclick="uploadParaNuvem()">⬆️ Enviar dados para o GitHub</button>
-    <button class="btn-add" onclick="downloadDaNuvem()" style="margin-top: 10px;">⬇️ Baixar dados do GitHub</button>
-</div>
 
     </div>
 

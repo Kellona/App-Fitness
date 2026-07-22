@@ -3,20 +3,17 @@ let contador = 0;
 let historico = JSON.parse(localStorage.getItem("treinos")) || [];
 let pesos = JSON.parse(localStorage.getItem("pesos")) || [];
 let injecoes = JSON.parse(localStorage.getItem("injecoes")) || [];
-let fotos = JSON.parse(localStorage.getItem("fotos")) || [];
 let grafico, graficoPeso;
 
 function abrirAba(aba) {
     document.getElementById("abaTreinos").style.display = aba === "treinos" ? "block" : "none";
     document.getElementById("abaPeso").style.display = aba === "peso" ? "block" : "none";
     document.getElementById("abaInj").style.display = aba === "inj" ? "block" : "none";
-    document.getElementById("abaFotos").style.display = aba === "fotos" ? "block" : "none";
     document.getElementById("abaNuvem").style.display = aba === "nuvem" ? "block" : "none";
 
     document.getElementById("tabTreinos").classList.toggle("active", aba === "treinos");
     document.getElementById("tabPeso").classList.toggle("active", aba === "peso");
     document.getElementById("tabInj").classList.toggle("active", aba === "inj");
-    document.getElementById("tabFotos").classList.toggle("active", aba === "fotos");
     document.getElementById("tabNuvem").classList.toggle("active", aba === "nuvem");
 }
 
@@ -194,72 +191,6 @@ function atualizarGraficoPeso() {
 }
 
 /* =====================================
-         FUNÇÕES EVOLUÇÃO (FOTOS)
-===================================== */
-function salvarFoto() {
-    const arquivoInput = document.getElementById("fotoInput");
-    const arquivo = arquivoInput.files[0];
-    const data = document.getElementById("dataFoto").value;
-
-    if (!arquivo || !data) {
-        alert("Escolha a data e a foto.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const img = new Image();
-        img.src = e.target.result;
-
-        img.onload = function() {
-            // Cria um canvas para redimensionar a imagem
-            const canvas = document.createElement("canvas");
-            const MAX_WIDTH = 800; // Largura máxima suficiente para telas de celular
-            let width = img.width;
-            let height = img.height;
-
-            if (width > MAX_WIDTH) {
-                height = Math.round((height * MAX_WIDTH) / width);
-                width = MAX_WIDTH;
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, width, height);
-
-            // Converte para JPEG com compressão de 70% de qualidade
-            const imagemComprimidabase64 = canvas.toDataURL("image/jpeg", 0.7);
-
-            try {
-                fotos.push({
-                    data: data,
-                    imagem: imagemComprimidabase64
-                });
-                localStorage.setItem("fotos", JSON.stringify(fotos));
-                carregarFotos();
-
-                // Limpa os campos
-                arquivoInput.value = "";
-                alert("Foto salva com sucesso!");
-            } catch (erro) {
-                console.error(erro);
-                alert("⚠️ A memória local ainda está cheia. Tente apagar fotos antigas ou enviar para a Nuvem!");
-            }
-        };
-    };
-
-    reader.readAsDataURL(arquivo);
-}
-
-function apagarFoto(i) {
-    fotos.splice(i, 1);
-    localStorage.setItem("fotos", JSON.stringify(fotos));
-    carregarFotos();
-}
-
-/* =====================================
          FUNÇÕES TREINOS
 ===================================== */
 const treinosSemana = {
@@ -428,8 +359,7 @@ async function uploadParaNuvem() {
     const dadosCompletos = {
         treinos: JSON.parse(localStorage.getItem("treinos")) || [],
         pesos: JSON.parse(localStorage.getItem("pesos")) || [],
-        injecoes: JSON.parse(localStorage.getItem("injecoes")) || [],
-        fotos: JSON.parse(localStorage.getItem("fotos")) || []
+        injecoes: JSON.parse(localStorage.getItem("injecoes")) || []
     };
 
     try {
@@ -488,12 +418,10 @@ async function downloadDaNuvem(manual = true) {
                 localStorage.setItem("treinos", JSON.stringify(conteudo.treinos || []));
                 localStorage.setItem("pesos", JSON.stringify(conteudo.pesos || []));
                 localStorage.setItem("injecoes", JSON.stringify(conteudo.injecoes || []));
-                localStorage.setItem("fotos", JSON.stringify(conteudo.fotos || []));
 
                 historico = conteudo.treinos || [];
                 pesos = conteudo.pesos || [];
                 injecoes = conteudo.injecoes || [];
-                fotos = conteudo.fotos || [];
                 contador = historico.length;
 
                 renderizarTudo();
@@ -515,7 +443,6 @@ function renderizarTudo() {
     carregarListaPeso();
     atualizarGraficoPeso();
     carregarInjecoes();
-    carregarFotos();
     carregarConfigNuvem();
 }
 
