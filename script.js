@@ -197,7 +197,8 @@ function atualizarGraficoPeso() {
          FUNÇÕES EVOLUÇÃO (FOTOS)
 ===================================== */
 function salvarFoto() {
-    const arquivo = document.getElementById("fotoInput").files[0];
+    const arquivoInput = document.getElementById("fotoInput");
+    const arquivo = arquivoInput.files[0];
     const data = document.getElementById("dataFoto").value;
 
     if (!arquivo || !data) {
@@ -207,34 +208,49 @@ function salvarFoto() {
 
     const reader = new FileReader();
     reader.onload = function(e) {
-        fotos.push({
-            data: data,
-            imagem: e.target.result
-        });
-        localStorage.setItem("fotos", JSON.stringify(fotos));
-        carregarFotos();
-        document.getElementById("fotoInput").value = "";
+        const img = new Image();
+        img.src = e.target.result;
+
+        img.onload = function() {
+            // Cria um canvas para redimensionar a imagem
+            const canvas = document.createElement("canvas");
+            const MAX_WIDTH = 800; // Largura máxima suficiente para telas de celular
+            let width = img.width;
+            let height = img.height;
+
+            if (width > MAX_WIDTH) {
+                height = Math.round((height * MAX_WIDTH) / width);
+                width = MAX_WIDTH;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Converte para JPEG com compressão de 70% de qualidade
+            const imagemComprimidabase64 = canvas.toDataURL("image/jpeg", 0.7);
+
+            try {
+                fotos.push({
+                    data: data,
+                    imagem: imagemComprimidabase64
+                });
+                localStorage.setItem("fotos", JSON.stringify(fotos));
+                carregarFotos();
+
+                // Limpa os campos
+                arquivoInput.value = "";
+                alert("Foto salva com sucesso!");
+            } catch (erro) {
+                console.error(erro);
+                alert("⚠️ A memória local ainda está cheia. Tente apagar fotos antigas ou enviar para a Nuvem!");
+            }
+        };
     };
+
     reader.readAsDataURL(arquivo);
-}
-
-function carregarFotos() {
-    let galeria = document.getElementById("galeriaFotos");
-    if (!galeria) return;
-    galeria.innerHTML = "";
-
-    fotos.forEach((foto, index) => {
-        galeria.innerHTML += `
-            <div style="background:white; margin-bottom:20px; border-radius:12px; padding:12px; box-shadow:0 2px 8px rgba(0,0,0,.15); text-align: left;">
-                <strong>${foto.data}</strong>
-                <br><br>
-                <img src="${foto.imagem}" style="width:100%; border-radius:10px; cursor:pointer;" onclick="window.open('${foto.imagem}')">
-                <button style="margin-top:10px; background:#ff4d4d; color:white; width:100%; padding:10px; border:none; border-radius:8px; font-weight: bold;" onclick="apagarFoto(${index})">
-                    Excluir
-                </button>
-            </div>
-        `;
-    });
 }
 
 function apagarFoto(i) {
