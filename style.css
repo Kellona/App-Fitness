@@ -18,7 +18,7 @@ body {
     width: 100%;
     max-width: 380px; /* Permite encolher em celulares menores e limita a 380px em telas grandes */
     background-color: #ffffff;
-    padding: 20px;
+    padding: 30px;
     border-radius: 18px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     text-align: center;
