@@ -193,13 +193,66 @@ function atualizarGraficoPeso() {
 /* =====================================
          FUNÇÕES TREINOS
 ===================================== */
+/* =====================================
+         FUNÇÕES TREINOS
+===================================== */
 const treinosSemana = {
-    1: `<h3>🔥 SEGUNDA — TREINO A (Inferiores/Glúteos)</h3><strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>1. Agachamento no banco – 3x12<br>2. Leg press – 3x12<br>3. Cadeira abdutora – 3x15<br>4. Mesa flexora – 3x12<br>5. Avanço estático – 3x10 por perna<br>6. Elevação pélvica – 3x12<br><br><strong>🚶‍♀️ ESTEIRA — 15 min</strong><br>• Ritmo confortável a moderado<br>• Inclinação opcional 1–3%`,
-    2: `<h3>🔥 TERÇA — TREINO B (Superiores)</h3><strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>1. Puxada frontal – 3x12<br>2. Remada baixa – 3x12<br>3. Supino máquina – 3x10<br>4. Desenvolvimento ombro – 3x10<br>5. Tríceps corda – 3x12<br>6. Rosca direta – 3x12<br>7. Prancha – 2x30s<br><br><strong>🚶‍♀️ ESTEIRA — 15 min</strong>`,
-    3: `<h3>🔥 QUARTA — TREINO C (Inferiores + Abdome)</h3><strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>1. Cadeira extensora – 3x12<br>2. Agachamento sumô com halter – 3x12<br>3. Stiff com halteres – 3x12<br>4. Glúteo no cabo/caneleira – 3x12 cada perna<br>5. Cadeira abdutora – 3x15<br>6. Abdômen prancha inclinada – 2x15<br>7. Prancha lateral – 2x20s<br><br><strong>🚶‍♀️ ESTEIRA — 15 min</strong>`,
-    4: `<h3>🔥 QUINTA — TREINO A (Progressão leve)</h3><strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>Segunda-feira + progressão suave:<br>➡️ +1–2 repetições OU +1–2 kg em 1 exercício<br>Tudo no amor, nada no desespero. 😍<br><br>1. Agachamento no banco – 3x12<br>2. Leg press – 3x12<br>3. Cadeira abdutora – 3x15<br>4. Mesa flexora – 3x12<br>5. Avanço estático – 3x10 por perna<br>6. Elevação pélvica – 3x12<br><br><strong>🚶‍♀️ ESTEIRA — 15 min</strong>`,
-    5: `<h3>🔥 SEXTA — TREINO B (Funcional + Superior leve)</h3><strong>🏋️ MUSCULAÇÃO — 35 min</strong><br>1. Agachamento no banco – 2x15<br>2. Remada baixa – 2x12<br>3. Elevação pélvica – 2x15<br>4. Tríceps corda – 2x12<br>5. Abdômen supra – 2x15<br>6. Prancha – 30s<br>7. Desenvolvimento ombro – 2x12<br><br><strong>🚶‍♀️ ESTEIRA — 15 min</strong>`,
-    6: "<h3>✨ SÁBADO — Livre</h3> Caminhada leve, alongamento, yoga… 🌿",
+    1: `<h3>🔥 SEGUNDA-FEIRA — Glúteos + Pernas (Protegendo o Joelho)</h3>
+        <strong>🚶‍♀️ TODOS OS DIAS:</strong> 15 min de Esteira (ou Bike/Elíptico)<br><br>
+        <strong>🏋️ MUSCULAÇÃO:</strong><br>
+        1. Cadeira Abdutora – 3x15 (ativação e estabilização)<br>
+        2. Elevação Pélvica no banco – 3x12<br>
+        3. Leg Press 45° (pés altos, amplitude controlada) – 3x12<br>
+        4. Mesa Flexora – 3x12<br>
+        5. Elevação de Panturrilha – 2x15<br><br>
+        ⏱️ <i>Descanso: 40s entre as séries</i><br>
+        🎯 <i>Meta: Ativar glúteos, melhorar circulação e fortalecer a base com segurança.</i>`,
+
+    2: `<h3>🔥 TERÇA-FEIRA — Braços + Costas + Abdômen</h3>
+        <strong>🚶‍♀️ TODOS OS DIAS:</strong> 15 min de Esteira (ou Bike/Elíptico)<br><br>
+        <strong>🏋️ MUSCULAÇÃO:</strong><br>
+        1. Puxada na frente / Pulley – 3x12<br>
+        2. Remada Baixa – 3x12<br>
+        3. Supino Máquina – 3x12<br>
+        4. Tríceps Corda / Polia – 3x12<br>
+        5. Rosca Polia / Martelo – 2x12<br>
+        6. Abdômen Infra no colchonete – 2x15<br><br>
+        🎯 <i>Meta: Postura firme e membros superiores desenhados sem sobrecarga.</i>`,
+
+    3: `<h3>🌿 QUARTA-FEIRA — Treino C (Mobilidade, Postura e Alongamentos)</h3>
+        <strong>🚶‍♀️ TODOS OS DIAS:</strong> 15 min de Esteira (ou Bike/Elíptico)<br><br>
+        <strong>🧘 MOBILIDADE (2 séries de 8 reps cada):</strong><br>
+        1. Agachamento sem carga (lento, 2s embaixo + mobilidade de quadril)<br>
+        2. Elevação de quadril a partir do agachamento profundo<br>
+        3. Mobilidade em posição de afundo (joelho de trás no chão)<br>
+        4. Perdigueiro (4 apoios)<br>
+        5. Anjo de Parede (cotovelos a 90°)<br>
+        6. Passagem de Bastão/Cabo de Vassoura<br>
+        7. Alongamentos estáticos passivos<br><br>
+        🎯 <i>Meta: Devolver mobilidade ao quadril/tornozelos, aliviar dores no joelho e recuperar o corpo.</i>`,
+
+    4: `<h3>🔥 QUINTA-FEIRA — Ombro + Peito + Core</h3>
+        <strong>🚶‍♀️ TODOS OS DIAS:</strong> 15 min de Esteira (ou Bike/Elíptico)<br><br>
+        <strong>🏋️ MUSCULAÇÃO:</strong><br>
+        1. Desenvolvimento Máquina – 3x12<br>
+        2. Elevação Lateral – 3x12<br>
+        3. Peitoral Máquina / Voador – 2x12<br>
+        4. Remada Alta – 2x12<br>
+        5. Prancha Isométrica – 2x 30 a 40s<br><br>
+        🎯 <i>Meta: Acelerar o metabolismo e fortalecer o tronco.</i>`,
+
+    5: `<h3>🔥 SEXTA-FEIRA — Posterior + Glúteo + Full Body Leve</h3>
+        <strong>🚶‍♀️ TODOS OS DIAS:</strong> 15 min de Esteira (ou Bike/Elíptico)<br><br>
+        <strong>🏋️ MUSCULAÇÃO:</strong><br>
+        1. Stiff com Halteres leves – 3x12 (joelhos semiflexionados)<br>
+        2. Glúteo 4 Apoios (Polia ou Caneleira) – 3x12<br>
+        3. Cadeira Flexora – 3x12<br>
+        4. Remada (máquina livre) – 2x12<br>
+        5. Tríceps Corda – 2x12<br>
+        6. Prancha + Canivete alternado – 2x12<br><br>
+        🎯 <i>Meta: Treino leve e global com foco em glúteo e posterior.</i>`,
+
+    6: "<h3>✨ SÁBADO — Livre</h3> Caminhada leve, alongamento, descanso ativo… 🌿",
     0: "<h3>✨ DOMINGO — Descanso</h3> Recuperar energias 💙"
 };
 
