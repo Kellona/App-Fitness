@@ -203,7 +203,7 @@ const treinosSemana = {
         1. Cadeira Abdutora – 3x15 (ativação e estabilização)<br>
         2. Elevação Pélvica no banco – 3x12<br>
         3. Leg Press 45° (pés altos, amplitude controlada) – 3x12<br>
-        4. Mesa Flexora – 3x12<br>
+        4. Cadeira Extensora – 3x12 (Amplitude parcial: do meio até quase esticar, sem trancar o joelho)<br>
         5. Elevação de Panturrilha – 2x15<br><br>
         ⏱️ <i>Descanso: 40s entre as séries</i><br>
         🎯 <i>Meta: Ativar glúteos, melhorar circulação e fortalecer a base com segurança.</i>`,
