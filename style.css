@@ -122,3 +122,50 @@ button {
 .tema3 { background: linear-gradient(135deg,#a1c4fd,#c2e9fb); }
 .tema4 { background: linear-gradient(135deg,#f6d365,#fda085); }
 .tema5 { background: linear-gradient(135deg,#84fab0,#8fd3f4); }
+
+
+/* Organização dos campos da avaliação corporal */
+.avaliacao-corporal {
+    text-align: left;
+}
+
+.avaliacao-corporal .campos-avaliacao {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.avaliacao-corporal .campo-avaliacao {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin-bottom: 14px;
+    gap: 6px;
+    box-sizing: border-box;
+}
+
+.avaliacao-corporal .campo-avaliacao label {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-weight: 600;
+}
+
+.avaliacao-corporal .campo-avaliacao input {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    margin: 0;
+    border: 1px solid #bbb;
+    border-radius: 8px;
+    background: white;
+    font-size: 16px;
+}
+
+.avaliacao-corporal h2,
+.avaliacao-corporal h3 {
+    text-align: left;
+}
