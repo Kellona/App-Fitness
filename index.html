@@ -53,6 +53,12 @@
                 <span>Composição corporal</span>
             </button>
 
+<button type="button" class="item-menu"
+    onclick="abrirAba('medidas')" id="tabMedidas">
+    <span class="icone-menu">📏</span>
+    <span>Medidas corporais</span>
+</button>
+
             <button type="button" class="item-menu"
                 onclick="abrirAba('inj')" id="tabInj">
                 <span class="icone-menu">♡</span>
@@ -293,6 +299,93 @@
 <!-- FIM DA AVALIAÇÃO CORPORAL -->
 
     </div>
+    
+<!-- MEDIDAS CORPORAIS -->
+<div id="abaMedidas" style="display:none;">
+
+    <h2>📏 Medidas corporais</h2>
+    <p>Acompanhe sua evolução em centímetros.</p>
+
+    <div class="card">
+        <h3>Registrar medidas</h3>
+
+        <label for="dataMedidas">Data da avaliação</label>
+        <input type="date" id="dataMedidas">
+
+        <label for="medidaCintura">Cintura (cm)</label>
+        <input type="number" id="medidaCintura"
+            min="0" step="0.1" placeholder="Ex.: 85,5">
+
+        <label for="medidaAbdomen">Abdômen (cm)</label>
+        <input type="number" id="medidaAbdomen"
+            min="0" step="0.1" placeholder="Ex.: 92">
+
+        <label for="medidaQuadril">Quadril (cm)</label>
+        <input type="number" id="medidaQuadril"
+            min="0" step="0.1" placeholder="Ex.: 105">
+
+        <label for="medidaTorax">Peito / tórax (cm)</label>
+        <input type="number" id="medidaTorax"
+            min="0" step="0.1" placeholder="Ex.: 98">
+
+        <label for="medidaBracoDireito">Braço direito (cm)</label>
+        <input type="number" id="medidaBracoDireito"
+            min="0" step="0.1" placeholder="Ex.: 32">
+
+        <label for="medidaBracoEsquerdo">Braço esquerdo (cm)</label>
+        <input type="number" id="medidaBracoEsquerdo"
+            min="0" step="0.1" placeholder="Ex.: 31,5">
+
+        <label for="medidaCoxaDireita">Coxa direita (cm)</label>
+        <input type="number" id="medidaCoxaDireita"
+            min="0" step="0.1" placeholder="Ex.: 60">
+
+        <label for="medidaCoxaEsquerda">Coxa esquerda (cm)</label>
+        <input type="number" id="medidaCoxaEsquerda"
+            min="0" step="0.1" placeholder="Ex.: 59,5">
+
+        <label for="medidaPanturrilhaDireita">Panturrilha direita (cm)</label>
+        <input type="number" id="medidaPanturrilhaDireita"
+            min="0" step="0.1" placeholder="Ex.: 38">
+
+        <label for="medidaPanturrilhaEsquerda">Panturrilha esquerda (cm)</label>
+        <input type="number" id="medidaPanturrilhaEsquerda"
+            min="0" step="0.1" placeholder="Ex.: 37,5">
+
+        <button type="button" onclick="salvarMedidasCorporais()">
+            Salvar medidas
+        </button>
+    </div>
+
+    <div class="card">
+        <h3>📈 Evolução das medidas</h3>
+
+        <label for="seletorMedida">Escolha a medida para visualizar</label>
+        <select id="seletorMedida">
+            <option value="cintura">Cintura</option>
+            <option value="abdomen">Abdômen</option>
+            <option value="quadril">Quadril</option>
+            <option value="torax">Peito / tórax</option>
+            <option value="bracoDireito">Braço direito</option>
+            <option value="bracoEsquerdo">Braço esquerdo</option>
+            <option value="coxaDireita">Coxa direita</option>
+            <option value="coxaEsquerda">Coxa esquerda</option>
+            <option value="panturrilhaDireita">Panturrilha direita</option>
+            <option value="panturrilhaEsquerda">Panturrilha esquerda</option>
+        </select>
+
+        <div id="resumoEvolucaoMedida"></div>
+        <canvas id="graficoMedidas"></canvas>
+    </div>
+
+    <div class="card">
+        <h3>📋 Histórico de medições</h3>
+        <div id="historicoMedidas"></div>
+    </div>
+
+</div>
+<!-- FIM DAS MEDIDAS CORPORAIS -->
+
         <!-- ABA INJEÇÕES -->
         <div id="abaInj" style="display:none;">
             <h2>💉 Aplicações</h2>
