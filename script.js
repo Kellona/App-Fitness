@@ -140,11 +140,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function abrirAba(nome) {
   const abas = {
-    treinos: ["abaTreinos", "tabTreinos"],
-    peso: ["abaPeso", "tabPeso"],
-    inj: ["abaInj", "tabInj"],
-    nuvem: ["abaNuvem", "tabNuvem"]
-  };
+  treinos: ["abaTreinos", "tabTreinos"],
+  peso: ["abaPeso", "tabPeso"],
+  composicao: ["abaComposicao", "tabComposicao"],
+  inj: ["abaInj", "tabInj"],
+  nuvem: ["abaNuvem", "tabNuvem"]
+};
 
   Object.values(abas).forEach(([idAba, idBotao]) => {
     const aba = document.getElementById(idAba);
@@ -166,13 +167,14 @@ function abrirAba(nome) {
   if (nome === "treinos") renderizarTreinos();
 
   if (nome === "peso") {
-    renderizarPeso();
+  renderizarPeso();
+}
 
-    if (typeof renderizarAvaliacaoCorporal === "function") {
-      renderizarAvaliacaoCorporal();
-    }
+if (nome === "composicao") {
+  if (typeof renderizarAvaliacaoCorporal === "function") {
+    renderizarAvaliacaoCorporal();
   }
-
+}
   if (nome === "inj") renderizarInjecoes();
 }
 
