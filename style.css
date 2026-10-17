@@ -523,3 +523,34 @@ input:focus, select:focus {
     padding: 15px;
   }
 }
+
+/* MEDIDAS CORPORAIS — organização dos campos */
+#abaMedidas .card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#abaMedidas .card label {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+#abaMedidas .card input,
+#abaMedidas .card select {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 8px;
+}
+
+#abaMedidas .card h3 {
+    margin-bottom: 12px;
+}
+
+#abaMedidas .card button {
+    width: 100%;
+    margin-top: 12px;
+}
