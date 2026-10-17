@@ -603,3 +603,38 @@ input:focus, select:focus {
         flex: 0 0 100% !important;
     }
 }
+
+/* AJUSTE DEFINITIVO DO FORMULÁRIO DE MEDIDAS */
+#abaMedidas label[for^="medida"],
+#abaMedidas label[for="dataMedidas"],
+#abaMedidas input[id^="medida"],
+#abaMedidas input[id="dataMedidas"] {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    float: none !important;
+}
+
+#abaMedidas label[for^="medida"],
+#abaMedidas label[for="dataMedidas"] {
+    margin: 12px 0 6px !important;
+    text-align: left !important;
+}
+
+#abaMedidas input[id^="medida"],
+#abaMedidas input[id="dataMedidas"] {
+    margin: 0 0 12px !important;
+    min-height: 44px;
+}
+
+/* Impede que o formulário fique em colunas no celular */
+@media (max-width: 760px) {
+    #abaMedidas .card label,
+    #abaMedidas .card input,
+    #abaMedidas .card select {
+        position: static !important;
+        flex-basis: auto !important;
+        align-self: stretch !important;
+    }
+}
