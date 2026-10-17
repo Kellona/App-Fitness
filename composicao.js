@@ -342,14 +342,27 @@ function imprimirRelatorioCorporal() {
       <title>Relatório de Avaliação Corporal</title>
       ${estilos}
       <style>
-        body {
-          font-family: Arial, sans-serif;
-          padding: 24px;
-          color: #222;
-          background: #fff;
-        }
-        @media print {
-          body { padding: 0; }
+        
+body {
+  font-family: Arial, sans-serif;
+  padding: 0;
+  margin: 0;
+  color: #222;
+  background: #fff;
+  line-height: 1.5;
+}
+
+@page {
+  size: A4;
+  margin: 20mm 18mm;
+}
+
+@media print {
+  body {
+    padding: 0;
+    margin: 0;
+  }
+}
         }
       </style>
     </head>
