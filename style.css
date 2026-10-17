@@ -169,3 +169,146 @@ button {
 .avaliacao-corporal h3 {
     text-align: left;
 }
+
+/* =====================================
+   PAINEL FITNESS — VISUAL MODERNO
+===================================== */
+
+:root {
+  --cor-principal: #252445;
+  --cor-lilas: #8B7CF6;
+  --cor-lavanda: #E8E5FF;
+  --cor-fundo: #F5F6FA;
+  --cor-branco: #FFFFFF;
+  --cor-texto: #29283D;
+  --cor-borda: #E5E5EF;
+  --sombra-card: 0 4px 18px rgba(37, 36, 69, 0.08);
+}
+
+body {
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.container {
+  background: var(--cor-branco);
+  border-radius: 22px;
+  box-shadow: var(--sombra-card);
+}
+
+h1 {
+  color: var(--cor-principal);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+h2, h3 {
+  color: var(--cor-principal);
+}
+
+.tabs {
+  border-bottom: 2px solid var(--cor-borda);
+  gap: 4px;
+}
+
+.tab {
+  color: #77758D;
+  border-radius: 10px 10px 0 0;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tab:hover {
+  background: var(--cor-lavanda);
+  color: var(--cor-principal);
+}
+
+.tab.active {
+  color: var(--cor-principal);
+  border-bottom: 3px solid var(--cor-lilas);
+  background: #F8F7FF;
+}
+
+button {
+  transition: transform 0.15s, filter 0.15s;
+}
+
+button:hover {
+  filter: brightness(0.96);
+  transform: translateY(-1px);
+}
+
+.btn-save,
+.btn-treino,
+.btn-add,
+.btn-inj {
+  border-radius: 12px;
+}
+
+.btn-save {
+  background: #7465E8;
+}
+
+.btn-treino {
+  background: var(--cor-principal);
+}
+
+.btn-add {
+  background: var(--cor-lilas);
+}
+
+.btn-inj {
+  background: #8B5CF6;
+}
+
+input, select {
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  font: inherit;
+}
+
+input:focus, select:focus {
+  outline: 2px solid var(--cor-lilas);
+  outline-offset: 1px;
+}
+
+.historic-box {
+  background: #FAFAFE;
+  border-color: var(--cor-borda);
+  border-radius: 14px;
+}
+
+.avaliacao-corporal {
+  background: var(--cor-branco);
+}
+
+.avaliacao-corporal h2 {
+  border-bottom: 2px solid var(--cor-lavanda);
+  padding-bottom: 10px;
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 10px 0;
+  }
+
+  .container {
+    width: calc(100% - 20px);
+    padding: 16px;
+    box-sizing: border-box;
+    border-radius: 16px;
+  }
+
+  h1 {
+    font-size: 23px;
+  }
+
+  .tab {
+    padding: 10px 4px;
+    font-size: 12px;
+  }
+
+  button {
+    font-size: 16px;
+  }
+}
