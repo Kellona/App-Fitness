@@ -1,117 +1,127 @@
 
-/* Painel Fitness - compatibilidade com dados antigos e Gemini */
+/* =====================================================
+   PAINEL FITNESS
+   Treinos, peso, IMC, injeções e sincronização.
+   Compatível com os registros antigos do navegador.
+   ===================================================== */
 
-const STORAGE_KEYS = {
-  TREINOS: 'fitness_treinos_db',
-  PESO: 'fitness_peso_db',
-  INJECOES: 'fitness_injecoes_db',
-  AVALIACAO: 'fitness_avaliacao_db',
-  NUVEM_CONFIG: 'fitness_nuvem_config'
+const CHAVES = {
+  treinos: "fitness_treinos_db",
+  pesos: "fitness_peso_db",
+  injecoes: "fitness_injecoes_db",
+  avaliacoes: "fitness_avaliacao_db",
+  nuvem: "fitness_nuvem_config"
 };
 
-let chartMensal = null;
-let chartPeso = null;
+let graficoTreinos = null;
+let graficoPesos = null;
 
-function lerLista(chaveNova, chaveAntiga, normalizar = x => x) {
-  let nova = [];
+const ALTURA_IMC = 1.75;
 
+// ---------- ARMAZENAMENTO COMPATÍVEL ----------
+
+function lerDados(chaveNova, chaveAntiga, converter = x => x) {
   try {
-    nova = JSON.parse(localStorage.getItem(chaveNova) || '[]');
-  } catch (e) {
-    console.error('Erro ao ler dados novos:', e);
-  }
+    const novos = JSON.parse(localStorage.getItem(chaveNova) || "[]");
 
-  if (Array.isArray(nova) && nova.length > 0) {
-    return nova.map(normalizar);
-  }
+    if (Array.isArray(novos) && novos.length > 0) {
+      return novos.map(converter);
+    }
 
-  if (chaveAntiga) {
-    try {
-      const antiga = JSON.parse(
-        localStorage.getItem(chaveAntiga) || '[]'
+    if (chaveAntiga) {
+      const antigos = JSON.parse(
+        localStorage.getItem(chaveAntiga) || "[]"
       );
 
-      if (Array.isArray(antiga) && antiga.length > 0) {
-        return antiga.map(normalizar);
+      if (Array.isArray(antigos) && antigos.length > 0) {
+        return antigos.map(converter);
       }
-    } catch (e) {
-      console.error('Erro ao ler dados antigos:', e);
     }
-  }
 
-  return Array.isArray(nova) ? nova.map(normalizar) : [];
+    return Array.isArray(novos) ? novos.map(converter) : [];
+  } catch (erro) {
+    console.error("Erro ao ler dados:", erro);
+    return [];
+  }
 }
 
-function gravarLista(chaveNova, chaveAntiga, dados) {
-  const conteudo = JSON.stringify(dados);
+function gravarDados(chaveNova, chaveAntiga, dados) {
+  const texto = JSON.stringify(dados);
 
-  localStorage.setItem(chaveNova, conteudo);
+  localStorage.setItem(chaveNova, texto);
 
   if (chaveAntiga) {
-    localStorage.setItem(chaveAntiga, conteudo);
+    localStorage.setItem(chaveAntiga, texto);
   }
 }
 
-function normalizarTreino(item) {
-  return typeof item === 'string'
-    ? item
-    : item && item.data
-      ? item.data
-      : '';
+function converterTreino(item) {
+  if (typeof item === "string") return item;
+  return item && item.data ? item.data : "";
 }
 
 function obterTreinos() {
-  return lerLista(
-    STORAGE_KEYS.TREINOS,
-    'treinos',
-    normalizarTreino
+  return lerDados(
+    CHAVES.treinos,
+    "treinos",
+    converterTreino
   ).filter(Boolean);
 }
 
 function obterPesos() {
-  return lerLista(
-    STORAGE_KEYS.PESO,
-    'pesos',
-    p => ({
-      ...p,
-      peso: Number(p.peso),
-      data: p.data
+  return lerDados(
+    CHAVES.pesos,
+    "pesos",
+    item => ({
+      ...item,
+      peso: Number(item.peso),
+      imc: Number(item.imc)
     })
-  ).filter(p => p.data && Number.isFinite(p.peso));
+  ).filter(item => item.data && item.peso > 0);
 }
 
 function obterInjecoes() {
-  return lerLista(
-    STORAGE_KEYS.INJECOES,
-    'injecoes',
-    i => typeof i === 'string'
-      ? { data: i, dose: 'Não informada' }
-      : { ...i, dose: i.dose || 'Não informada' }
-  ).filter(i => i.data);
+  return lerDados(
+    CHAVES.injecoes,
+    "injecoes",
+    item => typeof item === "string"
+      ? { data: item, dose: "Não informada" }
+      : item
+  ).filter(item => item.data);
 }
 
 function salvarTreinos(dados) {
-  gravarLista(STORAGE_KEYS.TREINOS, 'treinos', dados);
+  gravarDados(CHAVES.treinos, "treinos", dados);
 }
 
 function salvarPesos(dados) {
-  gravarLista(STORAGE_KEYS.PESO, 'pesos', dados);
+  gravarDados(CHAVES.pesos, "pesos", dados);
 }
 
 function salvarInjecoes(dados) {
-  gravarLista(STORAGE_KEYS.INJECOES, 'injecoes', dados);
+  gravarDados(CHAVES.injecoes, "injecoes", dados);
 }
 
-function dataLocalHoje() {
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 10);
+function dataHoje() {
+  const data = new Date();
+  data.setMinutes(data.getMinutes() - data.getTimezoneOffset());
+  return data.toISOString().slice(0, 10);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const hoje = dataLocalHoje();
+function formatarData(data) {
+  if (!data) return "";
+  const partes = data.split("-");
+  return partes.length === 3
+    ? `${partes[2]}/${partes[1]}/${partes[0]}`
+    : data;
+}
 
-  ['dataPeso', 'dataInjecao', 'dataAvaliacao'].forEach(id => {
+// ---------- INICIALIZAÇÃO ----------
+
+document.addEventListener("DOMContentLoaded", () => {
+  const hoje = dataHoje();
+
+  ["dataPeso", "dataInjecao"].forEach(id => {
     const campo = document.getElementById(id);
     if (campo && !campo.value) campo.value = hoje;
   });
@@ -119,109 +129,125 @@ document.addEventListener('DOMContentLoaded', () => {
   renderizarTreinos();
   renderizarPeso();
   renderizarInjecoes();
-  carregarNuvemConfig();
+  carregarConfiguracaoNuvem();
 
-  if (typeof renderizarAvaliacaoCorporal === 'function') {
+  if (typeof renderizarAvaliacaoCorporal === "function") {
     renderizarAvaliacaoCorporal();
   }
 });
 
+// ---------- ABAS ----------
+
 function abrirAba(nome) {
-  const mapa = {
-    treinos: ['abaTreinos', 'tabTreinos'],
-    peso: ['abaPeso', 'tabPeso'],
-    inj: ['abaInj', 'tabInj'],
-    nuvem: ['abaNuvem', 'tabNuvem']
+  const abas = {
+    treinos: ["abaTreinos", "tabTreinos"],
+    peso: ["abaPeso", "tabPeso"],
+    inj: ["abaInj", "tabInj"],
+    nuvem: ["abaNuvem", "tabNuvem"]
   };
 
-  Object.values(mapa).forEach(([aba, tab]) => {
-    const a = document.getElementById(aba);
-    const t = document.getElementById(tab);
+  Object.values(abas).forEach(([idAba, idBotao]) => {
+    const aba = document.getElementById(idAba);
+    const botao = document.getElementById(idBotao);
 
-    if (a) a.style.display = 'none';
-    if (t) t.classList.remove('active');
+    if (aba) aba.style.display = "none";
+    if (botao) botao.classList.remove("active");
   });
 
-  const selecionada = mapa[nome];
-  if (!selecionada) return;
+  if (!abas[nome]) return;
 
-  const [aba, tab] = selecionada;
-  const elementoAba = document.getElementById(aba);
-  const elementoTab = document.getElementById(tab);
+  const [idAba, idBotao] = abas[nome];
+  const aba = document.getElementById(idAba);
+  const botao = document.getElementById(idBotao);
 
-  if (elementoAba) elementoAba.style.display = 'block';
-  if (elementoTab) elementoTab.classList.add('active');
+  if (aba) aba.style.display = "block";
+  if (botao) botao.classList.add("active");
 
-  if (nome === 'treinos') renderizarTreinos();
+  if (nome === "treinos") renderizarTreinos();
 
-  if (nome === 'peso') {
+  if (nome === "peso") {
     renderizarPeso();
-    if (typeof renderizarAvaliacaoCorporal === 'function') {
+
+    if (typeof renderizarAvaliacaoCorporal === "function") {
       renderizarAvaliacaoCorporal();
     }
   }
 
-  if (nome === 'inj') renderizarInjecoes();
+  if (nome === "inj") renderizarInjecoes();
 }
 
+// ---------- TREINOS ----------
+
 function salvarRegistro() {
-  const hoje = dataLocalHoje();
-  const lista = obterTreinos();
-
-  if (lista.includes(hoje)) {
-    alert('Você já registrou o treino de hoje.');
-    return;
-  }
-
-  lista.push(hoje);
-  lista.sort();
-  salvarTreinos(lista);
-  renderizarTreinos();
-
-  alert('Treino de hoje registrado com sucesso!');
+  registrarTreinoNaData(dataHoje());
 }
 
 function abrirRegistroData() {
-  const modal = document.getElementById('modal');
-  const campo = document.getElementById('dataTreino');
+  const modal = document.getElementById("modal");
+  const campo = document.getElementById("dataTreino");
 
-  if (modal) modal.style.display = 'flex';
-  if (campo && !campo.value) campo.value = dataLocalHoje();
+  if (modal) modal.style.display = "flex";
+  if (campo && !campo.value) campo.value = dataHoje();
 }
 
 function fecharModal() {
-  const modal = document.getElementById('modal');
-  if (modal) modal.style.display = 'none';
+  const modal = document.getElementById("modal");
+  if (modal) modal.style.display = "none";
 }
 
 function registrarDataEscolhida() {
-  const data = document.getElementById('dataTreino')?.value;
+  const campo = document.getElementById("dataTreino");
 
-  if (!data) {
-    alert('Selecione uma data válida.');
+  if (!campo || !campo.value) {
+    alert("Selecione uma data para o treino.");
     return;
   }
 
-  const lista = obterTreinos();
-
-  if (lista.includes(data)) {
-    alert('Essa data já consta no histórico.');
-    return;
-  }
-
-  lista.push(data);
-  lista.sort();
-
-  salvarTreinos(lista);
+  registrarTreinoNaData(campo.value);
   fecharModal();
+}
+
+function registrarTreinoNaData(data) {
+  const treinos = obterTreinos();
+
+  if (treinos.includes(data)) {
+    alert("Já existe um treino registrado nessa data.");
+    renderizarTreinos();
+    return;
+  }
+
+  treinos.push(data);
+  treinos.sort();
+
+  salvarTreinos(treinos);
   renderizarTreinos();
 
-  alert('Treino registrado!');
+  alert("Treino registrado com sucesso!");
+}
+
+function apagarTreino(data) {
+  if (!confirm(
+    `Deseja excluir o treino do dia ${formatarData(data)}?`
+  )) return;
+
+  const treinos = obterTreinos();
+  const indice = treinos.indexOf(data);
+
+  if (indice < 0) {
+    alert("Não encontrei esse treino.");
+    return;
+  }
+
+  treinos.splice(indice, 1);
+  salvarTreinos(treinos);
+  renderizarTreinos();
+
+  alert("Treino excluído.");
 }
 
 function resetar() {
   if (!confirm(
-    'Atenção: deseja realmente apagar todo o histórico de treinos?'
+    "Deseja excluir TODOS os registros de treino? Essa ação não pode ser desfeita."
   )) return;
 
   salvarTreinos([]);
@@ -229,99 +255,100 @@ function resetar() {
 }
 
 function mostrarTreinoDia() {
-  const box = document.getElementById('boxTreino');
-  if (!box) return;
+  const caixa = document.getElementById("boxTreino");
+  if (!caixa) return;
 
   const dias = [
-    'Domingo',
-    'Segunda-feira',
-    'Terça-feira',
-    'Quarta-feira',
-    'Quinta-feira',
-    'Sexta-feira',
-    'Sábado'
+    "Domingo", "Segunda-feira", "Terça-feira",
+    "Quarta-feira", "Quinta-feira", "Sexta-feira",
+    "Sábado"
   ];
 
-  const treinos = [
-    'Descanso ativo ou alongamentos leves',
-    'Musculação: pernas + esteira 15 min',
-    'Membros superiores + core',
-    'Glúteos e posteriores + esteira 15 min',
-    'Costas e ombros',
-    'Treino completo / cardio',
-    'Caminhada ao ar livre / lazer'
+  const sugestoes = [
+    "Descanso ativo ou alongamentos leves",
+    "Musculação: pernas e cardio leve",
+    "Membros superiores e core",
+    "Glúteos e posteriores",
+    "Costas e ombros",
+    "Treino completo ou cardio",
+    "Caminhada leve ou lazer"
   ];
 
   const dia = new Date().getDay();
 
-  box.innerHTML =
-    `<strong>Treino sugerido para hoje (${dias[dia]}):</strong><br>` +
-    treinos[dia];
+  caixa.innerHTML =
+    `<strong>Treino sugerido para ${dias[dia]}:</strong><br>` +
+    sugestoes[dia];
 
-  box.style.display =
-    box.style.display === 'none' ? 'block' : 'none';
+  caixa.style.display =
+    caixa.style.display === "none" ? "block" : "none";
 }
 
 function renderizarTreinos() {
-  const contador = document.getElementById('contador');
-  if (!contador) return;
+  const treinos = obterTreinos();
 
-  const lista = obterTreinos();
-  const meta = 200;
+  const contador = document.getElementById("contador");
+  if (contador) contador.textContent = treinos.length;
 
-  contador.textContent = lista.length;
-
-  const faltam = document.getElementById('faltamDias');
+  const faltam = document.getElementById("faltamDias");
   if (faltam) {
     faltam.textContent =
-      `Faltam ${Math.max(0, meta - lista.length)} dias`;
+      `Faltam ${Math.max(0, 200 - treinos.length)} dias`;
   }
 
-  const progresso = document.getElementById('progressFill');
+  const progresso = document.getElementById("progressFill");
   if (progresso) {
     progresso.style.width =
-      `${Math.min(100, lista.length / meta * 100)}%`;
+      `${Math.min(100, treinos.length / 200 * 100)}%`;
   }
 
-  const historico = document.getElementById('historicoLista');
+  const historico = document.getElementById("historicoLista");
 
   if (historico) {
-    historico.innerHTML = lista
-      .slice(-10)
-      .reverse()
-      .map(data =>
-        `<div class="item-historico">🏋️ Treino em: ${data}</div>`
-      )
-      .join('') || '<p>Nenhum treino registrado.</p>';
+    historico.innerHTML = [...treinos]
+      .sort((a, b) => b.localeCompare(a))
+      .slice(0, 30)
+      .map(data => `
+        <div class="registro-item"
+             style="display:flex;align-items:center;gap:8px;">
+          <span>🏋️ ${formatarData(data)}</span>
+          <button type="button"
+            onclick="apagarTreino('${data}')"
+            style="width:auto;margin-left:auto;background:#dc3545;
+                   color:white;padding:6px 10px;font-size:13px;">
+            Excluir
+          </button>
+        </div>
+      `).join("") || "<p>Nenhum treino registrado.</p>";
   }
 
-  renderizarGraficoMensal(lista);
+  renderizarGraficoTreinos(treinos);
 }
 
-function renderizarGraficoMensal(lista) {
-  const canvas = document.getElementById('graficoMensal');
+function renderizarGraficoTreinos(treinos) {
+  const canvas = document.getElementById("graficoMensal");
 
-  if (!canvas || typeof Chart === 'undefined') return;
+  if (!canvas || typeof Chart === "undefined") return;
 
-  const agrupado = {};
+  if (graficoTreinos) graficoTreinos.destroy();
 
-  lista.forEach(data => {
+  const meses = {};
+
+  treinos.forEach(data => {
     const mes = data.slice(0, 7);
-    agrupado[mes] = (agrupado[mes] || 0) + 1;
+    meses[mes] = (meses[mes] || 0) + 1;
   });
 
-  if (chartMensal) chartMensal.destroy();
+  const chaves = Object.keys(meses).sort();
 
-  const meses = Object.keys(agrupado).sort();
-
-  chartMensal = new Chart(canvas, {
-    type: 'bar',
+  graficoTreinos = new Chart(canvas, {
+    type: "bar",
     data: {
-      labels: meses,
+      labels: chaves,
       datasets: [{
-        label: 'Treinos realizados',
-        data: meses.map(mes => agrupado[mes]),
-        backgroundColor: '#4a57ff'
+        label: "Treinos realizados",
+        data: chaves.map(mes => meses[mes]),
+        backgroundColor: "#4a57ff"
       }]
     },
     options: {
@@ -336,72 +363,177 @@ function renderizarGraficoMensal(lista) {
   });
 }
 
+// ---------- IMC E PESO ----------
+
+function calcularIMC(peso) {
+  return Number((peso / (ALTURA_IMC * ALTURA_IMC)).toFixed(2));
+}
+
+function classificarIMC(imc) {
+  if (imc < 18.5) {
+    return { nome: "Abaixo do peso", cor: "#2196F3" };
+  }
+
+  if (imc < 25) {
+    return { nome: "Peso adequado", cor: "#4CAF50" };
+  }
+
+  if (imc < 30) {
+    return { nome: "Sobrepeso", cor: "#FBC02D" };
+  }
+
+  if (imc < 35) {
+    return { nome: "Obesidade grau I", cor: "#FB8C00" };
+  }
+
+  if (imc < 40) {
+    return { nome: "Obesidade grau II", cor: "#E53935" };
+  }
+
+  return { nome: "Obesidade grau III", cor: "#8E24AA" };
+}
+
 function registrarPeso() {
-  const data = document.getElementById('dataPeso')?.value;
-  const textoPeso = document.getElementById('pesoInput')?.value || '';
-  const peso = Number(String(textoPeso).replace(',', '.'));
+  const campoData = document.getElementById("dataPeso");
+  const campoPeso = document.getElementById("pesoInput");
+
+  const data = campoData?.value;
+  const peso = Number(
+    String(campoPeso?.value || "").replace(",", ".")
+  );
 
   if (!data || !Number.isFinite(peso) || peso <= 0) {
-    alert('Insira uma data e um peso válidos.');
+    alert("Preencha uma data e um peso válido.");
     return;
   }
 
   const historico = obterPesos();
-  const existente = historico.findIndex(p => p.data === data);
+  const imc = calcularIMC(peso);
 
-  const registro = {
-    data,
-    peso,
-    imc: Number((peso / (1.75 * 1.75)).toFixed(2))
-  };
+  const registro = { data, peso, imc };
 
-  if (existente >= 0) {
-    historico[existente] = registro;
+  // Se a data já existe, corrige a pesagem daquele dia.
+  const indice = historico.findIndex(item => item.data === data);
+
+  if (indice >= 0) {
+    historico[indice] = registro;
   } else {
     historico.push(registro);
   }
 
   historico.sort((a, b) => a.data.localeCompare(b.data));
+
   salvarPesos(historico);
 
-  const campo = document.getElementById('pesoInput');
-  if (campo) campo.value = '';
+  if (campoPeso) campoPeso.value = "";
 
   renderizarPeso();
-  alert('Peso salvo com sucesso!');
+  alert("Peso salvo com sucesso!");
+}
+
+function apagarPeso(data) {
+  if (!confirm(
+    `Deseja excluir o peso registrado em ${formatarData(data)}?`
+  )) return;
+
+  const historico = obterPesos();
+  const atualizado = historico.filter(item => item.data !== data);
+
+  if (atualizado.length === historico.length) {
+    alert("Não encontrei essa pesagem.");
+    return;
+  }
+
+  salvarPesos(atualizado);
+  renderizarPeso();
+
+  alert("Pesagem excluída.");
 }
 
 function renderizarPeso() {
   const historico = obterPesos();
-  const lista = document.getElementById('listaPeso');
+  const lista = document.getElementById("listaPeso");
+
+  const legenda = `
+    <div style="padding:12px;margin-bottom:14px;border:1px solid #ddd;
+                border-radius:10px;background:#fff;text-align:left;
+                line-height:1.9;font-size:13px;">
+      <strong>📊 Classificação do IMC</strong><br>
+      <span style="color:#2196F3">●</span>
+      Abaixo de 18,5 — Abaixo do peso<br>
+      <span style="color:#4CAF50">●</span>
+      18,5 a 24,9 — Peso adequado<br>
+      <span style="color:#FBC02D">●</span>
+      25,0 a 29,9 — Sobrepeso<br>
+      <span style="color:#FB8C00">●</span>
+      30,0 a 34,9 — Obesidade grau I<br>
+      <span style="color:#E53935">●</span>
+      35,0 a 39,9 — Obesidade grau II<br>
+      <span style="color:#8E24AA">●</span>
+      40,0 ou mais — Obesidade grau III
+      <p style="font-size:11px;color:#666;margin-bottom:0;">
+        Referência geral para adultos. O IMC não avalia sozinho
+        a composição corporal nem diagnostica doenças.
+      </p>
+    </div>`;
 
   if (lista) {
-    lista.innerHTML = historico
-      .slice(-8)
-      .reverse()
-      .map(p =>
-        `<div class="item-historico">⚖️ ${p.data}: ` +
-        `<strong>${p.peso} kg</strong>` +
-        `${p.imc ? ` — IMC ${p.imc}` : ''}</div>`
-      )
-      .join('') || '<p>Nenhum peso registrado.</p>';
+    const registros = [...historico].sort(
+      (a, b) => b.data.localeCompare(a.data)
+    );
+
+    lista.innerHTML = legenda + (
+      registros.map(item => {
+        const imc = item.imc > 0
+          ? Number(item.imc)
+          : calcularIMC(Number(item.peso));
+
+        const classificacao = classificarIMC(imc);
+
+        return `
+          <div class="registro-item"
+               style="display:flex;align-items:center;gap:8px;
+                      border-left:6px solid ${classificacao.cor};
+                      margin-bottom:8px;background:#fff;
+                      border-radius:7px;padding:10px;">
+            <div style="text-align:left;flex:1;">
+              <strong>${formatarData(item.data)}</strong><br>
+              Peso: ${Number(item.peso).toFixed(1)} kg<br>
+              IMC: <strong>${imc.toFixed(2)}</strong><br>
+              <span style="color:${classificacao.cor};font-weight:bold;">
+                ${classificacao.nome}
+              </span>
+            </div>
+            <button type="button"
+              onclick="apagarPeso('${item.data}')"
+              style="width:auto;background:#dc3545;color:white;
+                     padding:7px 9px;font-size:12px;">
+              Excluir
+            </button>
+          </div>`;
+      }).join("") || "<p>Nenhum peso registrado.</p>"
+    );
   }
 
-  const canvas = document.getElementById('graficoPeso');
+  const canvas = document.getElementById("graficoPeso");
 
-  if (!canvas || typeof Chart === 'undefined') return;
+  if (!canvas || typeof Chart === "undefined") return;
 
-  if (chartPeso) chartPeso.destroy();
+  if (graficoPesos) graficoPesos.destroy();
 
-  chartPeso = new Chart(canvas, {
-    type: 'line',
+  const ordenados = [...historico].sort(
+    (a, b) => a.data.localeCompare(b.data)
+  );
+
+  graficoPesos = new Chart(canvas, {
+    type: "line",
     data: {
-      labels: historico.map(p => p.data),
+      labels: ordenados.map(item => formatarData(item.data)),
       datasets: [{
-        label: 'Peso (kg)',
-        data: historico.map(p => p.peso),
-        borderColor: '#28a745',
-        backgroundColor: 'rgba(40,167,69,.1)',
+        label: "Peso (kg)",
+        data: ordenados.map(item => Number(item.peso)),
+        borderColor: "#28a745",
+        backgroundColor: "rgba(40,167,69,.1)",
         fill: true,
         tension: 0.3
       }]
@@ -410,105 +542,106 @@ function renderizarPeso() {
   });
 }
 
-function registrarInjecao() {
-  const data = document.getElementById('dataInjecao')?.value;
-  const dose = document.getElementById('doseInjecao')?.value;
+// ---------- INJEÇÕES ----------
 
-  if (!data) {
-    alert('Selecione a data da aplicação.');
-    return;
-  }
+function registrarInjecao() {
+  const campoData = document.getElementById("dataInjecao");
+  const campoDose = document.getElementById("doseInjecao");
+
+  const data = campoData?.value || dataHoje();
+  const dose = campoDose?.value || "Não informada";
 
   const historico = obterInjecoes();
-  historico.push({ data, dose: dose || 'Não informada' });
+
+  historico.push({ data, dose });
   historico.sort((a, b) => a.data.localeCompare(b.data));
 
   salvarInjecoes(historico);
   renderizarInjecoes();
 
-  alert('Aplicação registrada!');
+  alert("Aplicação registrada!");
+}
+
+function apagarInjecao(indice) {
+  if (!confirm("Deseja excluir esta aplicação?")) return;
+
+  const historico = obterInjecoes();
+  historico.splice(indice, 1);
+
+  salvarInjecoes(historico);
+  renderizarInjecoes();
 }
 
 function renderizarInjecoes() {
   const historico = obterInjecoes();
-  const lista = document.getElementById('listaInjecoes');
-  const proxima = document.getElementById('proximaAplicacao');
+  const lista = document.getElementById("listaInjecoes");
 
   if (lista) {
     lista.innerHTML = historico
-      .slice(-10)
-      .reverse()
-      .map(i =>
-        `<div class="item-historico">💉 ${i.data} — Dose: ` +
-        `<strong>${i.dose}</strong></div>`
-      )
-      .join('') || '<p>Nenhuma aplicação registrada.</p>';
-  }
-
-  if (proxima) {
-    if (historico.length) {
-      const data = new Date(
-        historico[historico.length - 1].data + 'T12:00:00'
-      );
-
-      data.setDate(data.getDate() + 7);
-
-      proxima.textContent =
-        '📅 Próxima aplicação estimada: ' +
-        data.toLocaleDateString('pt-BR');
-    } else {
-      proxima.textContent = 'Nenhuma aplicação gravada ainda.';
-    }
+      .map((item, indice) => ({ ...item, indice }))
+      .sort((a, b) => b.data.localeCompare(a.data))
+      .map(item => `
+        <div class="registro-item"
+             style="display:flex;align-items:center;gap:8px;">
+          <span>💉 ${formatarData(item.data)} — ${item.dose || "Não informada"}</span>
+          <button type="button"
+            onclick="apagarInjecao(${item.indice})"
+            style="width:auto;margin-left:auto;background:#dc3545;
+                   color:white;padding:6px 10px;font-size:13px;">
+            Excluir
+          </button>
+        </div>
+      `).join("") || "<p>Nenhuma aplicação registrada.</p>";
   }
 }
 
-function carregarNuvemConfig() {
+// ---------- CONFIGURAÇÃO DA NUVEM ----------
+
+function carregarConfiguracaoNuvem() {
   let config = {};
 
   try {
     config = JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.NUVEM_CONFIG) || '{}'
+      localStorage.getItem(CHAVES.nuvem) || "{}"
     );
-  } catch (e) {
-    console.error(e);
+  } catch (erro) {
+    console.error(erro);
   }
 
   config.gistId =
-    config.gistId || localStorage.getItem('github_gist_id') || '';
+    config.gistId || localStorage.getItem("github_gist_id") || "";
 
   config.token =
-    config.token || localStorage.getItem('github_token') || '';
+    config.token || localStorage.getItem("github_token") || "";
 
-  const id = document.getElementById('gistIdInput');
-  const token = document.getElementById('gistTokenInput');
+  const campoId = document.getElementById("gistIdInput");
+  const campoToken = document.getElementById("gistTokenInput");
 
-  if (id) id.value = config.gistId;
-  if (token) token.value = config.token;
+  if (campoId) campoId.value = config.gistId;
+  if (campoToken) campoToken.value = config.token;
 }
 
 function salvarConfigNuvem() {
   const gistId =
-    document.getElementById('gistIdInput')?.value.trim();
+    document.getElementById("gistIdInput")?.value.trim();
 
   const token =
-    document.getElementById('gistTokenInput')?.value.trim();
+    document.getElementById("gistTokenInput")?.value.trim();
 
   if (!gistId || !token) {
-    alert('Preencha o ID do Gist e o token.');
+    alert("Preencha o ID do Gist e o token.");
     return;
   }
 
-  const config = { gistId, token };
-
   localStorage.setItem(
-    STORAGE_KEYS.NUVEM_CONFIG,
-    JSON.stringify(config)
+    CHAVES.nuvem,
+    JSON.stringify({ gistId, token })
   );
 
-  localStorage.setItem('github_gist_id', gistId);
-  localStorage.setItem('github_token', token);
+  localStorage.setItem("github_gist_id", gistId);
+  localStorage.setItem("github_token", token);
 
-  alert('Configurações salvas no navegador.');
+  alert("Configuração salva.");
 }
 
 async function uploadParaNuvem() {
@@ -516,313 +649,131 @@ async function uploadParaNuvem() {
 
   try {
     config = JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.NUVEM_CONFIG) || '{}'
+      localStorage.getItem(CHAVES.nuvem) || "{}"
     );
-  } catch (e) {
-    alert('Não foi possível ler a configuração da nuvem.');
+  } catch {
+    alert("Erro ao ler a configuração da nuvem.");
     return;
   }
+
+  config.gistId =
+    config.gistId || localStorage.getItem("github_gist_id");
+
+  config.token =
+    config.token || localStorage.getItem("github_token");
 
   if (!config.gistId || !config.token) {
-    alert('Configure o Gist ID e o Token do GitHub primeiro.');
+    alert("Configure o Gist ID e o token primeiro.");
     return;
   }
 
-  const payload = {
+  const dados = {
     treinos: obterTreinos(),
     pesos: obterPesos(),
     injecoes: obterInjecoes(),
-    avaliacoes:
-      typeof obterAvaliacoesCorporais === 'function'
-        ? obterAvaliacoesCorporais()
-        : []
+    avaliacoesDobras: JSON.parse(
+      localStorage.getItem("avaliacoesDobras") || "[]"
+    )
   };
 
   try {
     const resposta = await fetch(
       `https://api.github.com/gists/${config.gistId}`,
       {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
           Authorization: `Bearer ${config.token}`,
-          Accept: 'application/vnd.github+json',
-          'Content-Type': 'application/json'
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           files: {
-            'fitness_data.json': {
-              content: JSON.stringify(payload, null, 2)
-            },
-            'dados_fitness.json': {
-              content: JSON.stringify(payload, null, 2)
+            "dados_fitness.json": {
+              content: JSON.stringify(dados, null, 2)
             }
           }
         })
       }
     );
 
-    if (!resposta.ok) {
-      throw new Error('HTTP ' + resposta.status);
-    }
+    if (!resposta.ok) throw new Error("HTTP " + resposta.status);
 
-    alert('Dados enviados para o GitHub Gist.');
+    alert("Dados enviados para a nuvem.");
   } catch (erro) {
     console.error(erro);
-    alert(
-      'Não foi possível enviar. Confira a conexão, o Gist ID ' +
-      'e as permissões do token.'
-    );
+    alert("Falha no envio. Confira a conexão e a configuração do Gist.");
   }
 }
 
-async function downloadDaNuvem(alertaManual = false) {
+async function downloadDaNuvem(alertaManual = true) {
   let config;
 
   try {
     config = JSON.parse(
-      localStorage.getItem(STORAGE_KEYS.NUVEM_CONFIG) || '{}'
+      localStorage.getItem(CHAVES.nuvem) || "{}"
     );
-  } catch (e) {
-    if (alertaManual) alert('Erro ao ler a configuração da nuvem.');
+  } catch {
+    alert("Erro ao ler a configuração da nuvem.");
     return;
   }
 
   config.gistId =
-    config.gistId || localStorage.getItem('github_gist_id') || '';
+    config.gistId || localStorage.getItem("github_gist_id");
 
   if (!config.gistId) {
-    if (alertaManual) alert('Configure o ID do Gist primeiro.');
+    if (alertaManual) alert("Configure o Gist ID primeiro.");
     return;
   }
+
+  if (alertaManual && !confirm(
+    "Baixar os dados da nuvem pode substituir os dados locais. Deseja continuar?"
+  )) return;
 
   try {
     const resposta = await fetch(
       `https://api.github.com/gists/${config.gistId}`
     );
 
-    if (!resposta.ok) {
-      throw new Error('HTTP ' + resposta.status);
-    }
+    if (!resposta.ok) throw new Error("HTTP " + resposta.status);
 
     const gist = await resposta.json();
     const arquivo =
-      gist.files['fitness_data.json'] ||
-      gist.files['dados_fitness.json'];
+      gist.files["dados_fitness.json"] ||
+      gist.files["fitness_data.json"];
 
-    if (!arquivo) {
-      throw new Error('Arquivo de dados não encontrado no Gist.');
-    }
+    if (!arquivo) throw new Error("Arquivo de dados não encontrado.");
 
     const dados = JSON.parse(arquivo.content);
 
     if (Array.isArray(dados.treinos)) {
-      salvarTreinos(dados.treinos.map(normalizarTreino).filter(Boolean));
+      salvarTreinos(dados.treinos.map(converterTreino).filter(Boolean));
     }
 
-    if (Array.isArray(dados.pesos)) {
-      salvarPesos(dados.pesos);
-    }
+    if (Array.isArray(dados.pesos)) salvarPesos(dados.pesos);
+    if (Array.isArray(dados.injecoes)) salvarInjecoes(dados.injecoes);
 
-    if (Array.isArray(dados.injecoes)) {
-      salvarInjecoes(dados.injecoes);
-    }
-
-    if (Array.isArray(dados.avaliacoes)) {
+    if (Array.isArray(dados.avaliacoesDobras)) {
       localStorage.setItem(
-        STORAGE_KEYS.AVALIACAO,
-        JSON.stringify(dados.avaliacoes)
+        "avaliacoesDobras",
+        JSON.stringify(dados.avaliacoesDobras)
       );
-
       localStorage.setItem(
-        'avaliacoesDobras',
-        JSON.stringify(dados.avaliacoes)
+        CHAVES.avaliacoes,
+        JSON.stringify(dados.avaliacoesDobras)
       );
     }
 
-    
-function renderizarTreinos() {
-  const contador = document.getElementById('contador');
-  const lista = document.getElementById('historicoLista');
-  const treinos = obterTreinos();
-
-  if (contador) contador.textContent = treinos.length;
-
-  const faltam = document.getElementById('faltamDias');
-  if (faltam) {
-    faltam.textContent =
-      `Faltam ${Math.max(0, 200 - treinos.length)} dias`;
-  }
-
-  const progresso = document.getElementById('progressFill');
-  if (progresso) {
-    progresso.style.width =
-      `${Math.min(100, treinos.length / 200 * 100)}%`;
-  }
-
-  if (lista) {
-    lista.innerHTML = treinos
-      .map((data, indice) => ({ data, indice }))
-      .reverse()
-      .map(item => `
-        <div class="item-historico"
-             style="display:flex;justify-content:space-between;
-                    align-items:center;gap:10px;margin-bottom:8px;">
-          <span>🏋️ Treino em: ${item.data}</span>
-          <button type="button"
-            onclick="apagarTreino('${item.data}')"
-            style="background:#dc3545;color:white;border:0;
-                   padding:7px 10px;border-radius:6px;cursor:pointer;">
-            Excluir
-          </button>
-        </div>
-      `).join('') || '<p>Nenhum treino registrado.</p>';
-  }
-
-  renderizarGraficoMensal(treinos);
-}
-
-function apagarTreino(data) {
-  if (!confirm(`Deseja excluir o treino do dia ${data}?`)) return;
-
-  const treinos = obterTreinos();
-  const indice = treinos.indexOf(data);
-
-  if (indice === -1) {
-    alert('Treino não encontrado.');
-    return;
-  }
-
-  treinos.splice(indice, 1);
-  salvarTreinos(treinos);
-  renderizarTreinos();
-}
-
-   
-function obterClassificacaoIMC(imc) {
-  if (imc < 18.5) {
-    return { texto: 'Abaixo do peso', cor: '#4DA6FF' };
-  }
-  if (imc < 25) {
-    return { texto: 'Peso adequado', cor: '#4CAF50' };
-  }
-  if (imc < 30) {
-    return { texto: 'Sobrepeso', cor: '#FFD54F' };
-  }
-  if (imc < 35) {
-    return { texto: 'Obesidade grau I', cor: '#FF9800' };
-  }
-  if (imc < 40) {
-    return { texto: 'Obesidade grau II', cor: '#F44336' };
-  }
-  return { texto: 'Obesidade grau III', cor: '#9C27B0' };
-}
-
-function renderizarPeso() {
-  const historico = obterPesos();
-  const lista = document.getElementById('listaPeso');
-
-  if (lista) {
-    const legenda = `
-      <div style="margin-bottom:15px;padding:12px;background:#f8f8f8;
-                  border-radius:10px;border:1px solid #ddd;
-                  font-size:14px;line-height:1.9;">
-        <strong>📊 Classificação do IMC</strong><br>
-        <span style="color:#1680d4">🔵</span> Abaixo de 18,5 — Abaixo do peso<br>
-        <span style="color:#4CAF50">🟢</span> 18,5 a 24,9 — Peso adequado<br>
-        <span style="color:#d6a600">🟡</span> 25,0 a 29,9 — Sobrepeso<br>
-        <span style="color:#FF9800">🟠</span> 30,0 a 34,9 — Obesidade grau I<br>
-        <span style="color:#F44336">🔴</span> 35,0 a 39,9 — Obesidade grau II<br>
-        <span style="color:#9C27B0">🟣</span> 40,0 ou mais — Obesidade grau III
-      </div>`;
-
-    const registros = historico
-      .map((p, indice) => ({ ...p, indice }))
-      .sort((a, b) => b.data.localeCompare(a.data));
-
-    lista.innerHTML = legenda + (
-      registros.map(p => {
-        const imc = Number(p.imc) ||
-          (Number(p.peso) / (1.75 * 1.75));
-
-        const classificacao = obterClassificacaoIMC(imc);
-
-        return `
-          <div style="border-left:7px solid ${classificacao.cor};
-                      background:#f8f8f8;padding:12px;margin-bottom:9px;
-                      border-radius:8px;display:flex;
-                      justify-content:space-between;align-items:center;
-                      gap:10px;">
-            <div>
-              <strong>${p.data}</strong><br>
-              ${Number(p.peso).toFixed(1)} kg —
-              <strong>IMC: ${imc.toFixed(2)}</strong><br>
-              <span style="color:${classificacao.cor};font-weight:bold;">
-                ${classificacao.texto}
-              </span>
-            </div>
-            <button type="button"
-              onclick="apagarPeso('${p.data}')"
-              style="background:#dc3545;color:white;border:0;
-                     padding:7px 10px;border-radius:6px;cursor:pointer;">
-              Excluir
-            </button>
-          </div>`;
-      }).join('') || '<p>Nenhum peso registrado.</p>'
-    );
-  }
-
-  const canvas = document.getElementById('graficoPeso');
-
-  if (canvas && typeof Chart !== 'undefined') {
-    if (chartPeso) chartPeso.destroy();
-
-    chartPeso = new Chart(canvas, {
-      type: 'line',
-      data: {
-        labels: historico.map(p => p.data),
-        datasets: [{
-          label: 'Peso (kg)',
-          data: historico.map(p => Number(p.peso)),
-          borderColor: '#28a745',
-          backgroundColor: 'rgba(40,167,69,.1)',
-          fill: true,
-          tension: 0.3
-        }]
-      },
-      options: { responsive: true }
-    });
-  }
-}
-
-function apagarPeso(data) {
-  if (!confirm(`Deseja excluir a pesagem do dia ${data}?`)) return;
-
-  const historico = obterPesos();
-  const atualizado = historico.filter(p => p.data !== data);
-
-  if (atualizado.length === historico.length) {
-    alert('Pesagem não encontrada.');
-    return;
-  }
-
-  salvarPesos(atualizado);
-  renderizarPeso();
-}
-
+    renderizarTreinos();
+    renderizarPeso();
     renderizarInjecoes();
 
-    if (typeof renderizarAvaliacaoCorporal === 'function') {
+    if (typeof renderizarAvaliacaoCorporal === "function") {
       renderizarAvaliacaoCorporal();
     }
 
-    if (alertaManual) {
-      alert('Dados baixados e atualizados.');
-    }
+    if (alertaManual) alert("Dados carregados da nuvem.");
   } catch (erro) {
     console.error(erro);
-
-    if (alertaManual) {
-      alert('Falha ao baixar: ' + erro.message);
-    }
+    if (alertaManual) alert("Não foi possível baixar: " + erro.message);
   }
 }
