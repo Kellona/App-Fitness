@@ -367,8 +367,6 @@ function imprimirRelatorioCorporal() {
   };
 }
 
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   renderizarAvaliacaoCorporal();
 });
