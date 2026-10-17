@@ -834,26 +834,32 @@ function atualizarVisaoGeral() {
     ? obterInjecoes()
     : [];
 
-  
-  // 4. Próxima aplicação: toda quinta-feira
   const elementoAplicacao =
     document.getElementById("resumoAplicacao");
 
   if (elementoAplicacao) {
     const hoje = new Date();
+    const hojeLocal = [
+      hoje.getFullYear(),
+      String(hoje.getMonth() + 1).padStart(2, "0"),
+      String(hoje.getDate()).padStart(2, "0")
+    ].join("-");
 
-    // Dia da semana: domingo = 0, quinta = 4
-    let diasAteQuinta = (4 - hoje.getDay() + 7) % 7;
+    const proximas = injecoes
+      .filter(item => item.data && item.data >= hojeLocal)
+      .sort((a, b) => a.data.localeCompare(b.data));
 
-    // Se hoje for quinta-feira, mostrar a próxima semana
-    if (diasAteQuinta === 0) {
-      diasAteQuinta = 7;
+    if (proximas.length > 0) {
+      const proxima = proximas[0];
+      const dataFormatada =
+        typeof formatarData === "function"
+          ? formatarData(proxima.data)
+          : proxima.data;
+
+      elementoAplicacao.textContent =
+        `${dataFormatada} — ${proxima.dose || "Dose não informada"}`;
+    } else {
+      elementoAplicacao.textContent = "Não cadastrada";
     }
-
-    const proxima = new Date(hoje);
-    proxima.setDate(hoje.getDate() + diasAteQuinta);
-
-    const dataFormatada = proxima.toLocaleDateString("pt-BR");
-
-    elementoAplicacao.textContent = dataFormatada;
   }
+}
