@@ -829,7 +829,8 @@ function atualizarVisaoGeral() {
     elementoAvaliacoes.textContent = avaliacoes.length;
   }
 
-  // 4. Próxima aplicação cadastrada
+
+  // 4. Próxima aplicação: intervalo de 7 dias
   const injecoes = typeof obterInjecoes === "function"
     ? obterInjecoes()
     : [];
@@ -838,28 +839,33 @@ function atualizarVisaoGeral() {
     document.getElementById("resumoAplicacao");
 
   if (elementoAplicacao) {
-    const hoje = new Date();
-    const hojeLocal = [
-      hoje.getFullYear(),
-      String(hoje.getMonth() + 1).padStart(2, "0"),
-      String(hoje.getDate()).padStart(2, "0")
-    ].join("-");
+    if (injecoes.length > 0) {
+      // Identifica a aplicação mais recente
+      const ultimaAplicacao = [...injecoes]
+        .filter(item => item.data)
+        .sort((a, b) => b.data.localeCompare(a.data))[0];
 
-    const proximas = injecoes
-      .filter(item => item.data && item.data >= hojeLocal)
-      .sort((a, b) => a.data.localeCompare(b.data));
+      if (ultimaAplicacao) {
+        // Converte a data registrada em data local
+        const partes = ultimaAplicacao.data.split("-").map(Number);
+        const proxima = new Date(
+          partes[0],
+          partes[1] - 1,
+          partes[2]
+        );
 
-    if (proximas.length > 0) {
-      const proxima = proximas[0];
-      const dataFormatada =
-        typeof formatarData === "function"
-          ? formatarData(proxima.data)
-          : proxima.data;
+        // Soma 7 dias à última aplicação
+        proxima.setDate(proxima.getDate() + 7);
 
-      elementoAplicacao.textContent =
-        `${dataFormatada} — ${proxima.dose || "Dose não informada"}`;
+        const dataFormatada = proxima.toLocaleDateString("pt-BR");
+
+        elementoAplicacao.textContent =
+          `${dataFormatada} — ${ultimaAplicacao.dose || "Dose não informada"}`;
+      } else {
+        elementoAplicacao.textContent = "Cadastre uma aplicação";
+      }
     } else {
-      elementoAplicacao.textContent = "Não cadastrada";
+      elementoAplicacao.textContent = "Cadastre uma aplicação";
     }
   }
 }
