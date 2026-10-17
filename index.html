@@ -13,18 +13,64 @@
 </head>
 <body>
 
-    <div class="container" id="appContainer">
+    
+<div class="container" id="appContainer">
 
-        <h1>Seu Painel Fitness</h1>
-
-        <!-- ABAS -->
-        <div class="tabs">
-            <div class="tab active" onclick="abrirAba('treinos')" id="tabTreinos">Treinos</div>
-            <div class="tab" onclick="abrirAba('peso')" id="tabPeso">Peso & IMC</div>
-            <div class="tab" onclick="abrirAba('composicao')" id="tabComposicao">Composição corporal</div>
-            <div class="tab" onclick="abrirAba('inj')" id="tabInj">Injeções</div>
-            <div class="tab" onclick="abrirAba('nuvem')" id="tabNuvem">☁️ Nuvem</div>
+    <aside class="menu-lateral">
+        <div class="marca-painel">
+            <div class="marca-icone">✦</div>
+            <div>
+                <strong>Painel Fitness</strong>
+                <small>Sua evolução, seu ritmo</small>
+            </div>
         </div>
+
+        <p class="menu-titulo">MENU PRINCIPAL</p>
+
+        <nav class="menu-navegacao">
+            <button type="button" class="item-menu active"
+                onclick="abrirAba('treinos')" id="tabTreinos">
+                <span class="icone-menu">⌂</span>
+                <span>Treinos</span>
+            </button>
+
+            <button type="button" class="item-menu"
+                onclick="abrirAba('peso')" id="tabPeso">
+                <span class="icone-menu">⚖</span>
+                <span>Peso & IMC</span>
+            </button>
+
+            <button type="button" class="item-menu"
+                onclick="abrirAba('composicao')" id="tabComposicao">
+                <span class="icone-menu">◉</span>
+                <span>Composição corporal</span>
+            </button>
+
+            <button type="button" class="item-menu"
+                onclick="abrirAba('inj')" id="tabInj">
+                <span class="icone-menu">♡</span>
+                <span>Injeções</span>
+            </button>
+
+            <button type="button" class="item-menu"
+                onclick="abrirAba('nuvem')" id="tabNuvem">
+                <span class="icone-menu">☁</span>
+                <span>Nuvem</span>
+            </button>
+        </nav>
+
+        <div class="menu-rodape">
+            <span>✦</span> Um passo de cada vez.
+        </div>
+    </aside>
+
+    <main class="area-principal">
+        <header class="cabecalho-painel">
+            <div>
+                <p class="subtitulo-painel">SEU ESPAÇO DE SAÚDE E BEM-ESTAR</p>
+                <h1>Seu Painel Fitness</h1>
+            </div>
+        </header>
 
         <!-- ABA TREINOS -->
         <div id="abaTreinos">
@@ -244,9 +290,10 @@
 
             <button class="btn-treino" onclick="uploadParaNuvem()">⬆️ Enviar dados para o GitHub</button>
             <button class="btn-add" onclick="downloadDaNuvem(true)" style="margin-top: 10px;">⬇️ Baixar dados do GitHub</button>
-        </div>
-
-    </div>
+       </div> <!-- fecha abaNuvem -->
+    </main>
+</div> <!-- fecha appContainer -->
+<!-- modal etc... -->
 
     <!-- Modal Treino -->
     <div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index: 1000;">
