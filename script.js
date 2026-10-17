@@ -869,3 +869,6 @@ function atualizarVisaoGeral() {
     }
   }
 }
+document.addEventListener("DOMContentLoaded", function () {
+  abrirAba("inicio");
+});
