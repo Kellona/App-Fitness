@@ -1,573 +1,155 @@
+/* ==========================================================================
+   COMPOSIÇÃO CORPORAL - PROTOCOLO JACKSON-POLLOCK (7 DOBRAS)
+   ========================================================================== */
 
-/* PAINEL FITNESS — AVALIAÇÃO CORPORAL COM 7 DOBRAS
-   Este arquivo deve ser carregado depois de script.js.
-*/
-
-var avaliacoesDobras = JSON.parse(
-    localStorage.getItem("avaliacoesDobras") || "[]"
-);
-
-var graficoMassaMagra = null;
-var graficoPercentualGordura = null;
-
-// --------------------------------------------------
-// CÁLCULO E SALVAMENTO DA AVALIAÇÃO
-// --------------------------------------------------
+let chartMassaMagra = null;
+let chartGordura = null;
 
 function salvarAvaliacaoCorporal() {
-    const data = document.getElementById("dataAvaliacao").value;
-    const idade = Number(document.getElementById("idadeAvaliacao").value);
-    const peso = Number(document.getElementById("pesoAvaliacao").value);
+    const data = document.getElementById('dataAvaliacao').value;
+    const idade = parseFloat(document.getElementById('idadeAvaliacao').value);
+    const peso = parseFloat(document.getElementById('pesoAvaliacao').value);
 
-    const campos = {
-        peitoral: "dobraPeitoral",
-        axilarMedia: "dobraAxilar",
-        triceps: "dobraTriceps",
-        subescapular: "dobraSubescapular",
-        abdominal: "dobraAbdominal",
-        supraIliaca: "dobraSuprailiaca",
-        coxa: "dobraCoxa"
-    };
+    // Captura das 7 Dobras Cutâneas
+    const peitoral = parseFloat(document.getElementById('dobraPeitoral').value) || 0;
+    const axilar = parseFloat(document.getElementById('dobraAxilar').value) || 0;
+    const triceps = parseFloat(document.getElementById('dobraTriceps').value) || 0;
+    const subescapular = parseFloat(document.getElementById('dobraSubescapular').value) || 0;
+    const abdominal = parseFloat(document.getElementById('dobraAbdominal').value) || 0;
+    const suprailiaca = parseFloat(document.getElementById('dobraSuprailiaca').value) || 0;
+    const coxa = parseFloat(document.getElementById('dobraCoxa').value) || 0;
 
-    const dobras = {};
-
-    for (const chave in campos) {
-        dobras[chave] = Number(
-            document.getElementById(campos[chave]).value
-        );
-    }
-
-    if (
-        !data ||
-        !idade ||
-        idade < 18 ||
-        idade > 100 ||
-        !peso ||
-        peso <= 0 ||
-        Object.values(dobras).some(v => !Number.isFinite(v) || v <= 0)
-    ) {
-        alert("Preencha a data, a idade, o peso e as sete dobras com valores válidos.");
+    if (!data || isNaN(idade) || isNaN(peso)) {
+        alert('Preencha os campos obrigatórios: Data, Idade e Peso.');
         return;
     }
 
-    const soma = Object.values(dobras).reduce((a, b) => a + b, 0);
-
-    // Jackson-Pollock: 7 dobras para mulheres.
-    const densidade =
-        1.097 -
-        (0.00046971 * soma) +
-        (0.00000056 * soma * soma) -
-        (0.00012828 * idade);
-
-    if (!Number.isFinite(densidade) || densidade <= 0) {
-        alert("Não foi possível calcular. Confira as medidas.");
+    const somaDobras = peitoral + axilar + triceps + subescapular + abdominal + suprailiaca + coxa;
+    if (somaDobras === 0) {
+        alert('Insira as medidas das dobras para realizar o cálculo.');
         return;
     }
 
-    // Equação de Siri para estimativa do percentual de gordura.
-    const percentualGordura = (495 / densidade) - 450;
-
-    if (
-        !Number.isFinite(percentualGordura) ||
-        percentualGordura < 0 ||
-        percentualGordura > 70
-    ) {
-        alert("Resultado fora da faixa esperada. Confira as medidas.");
-        return;
-    }
-
-    const massaGorda = peso * percentualGordura / 100;
-    const massaMagra = peso - massaGorda;
+    // Fórmula Jackson-Pollock 7 Dobras para Mulheres (Densidade Corporal)
+    const densidade = 1.0970 - (0.00046971 * somaDobras) + (0.00000056 * (somaDobras ** 2)) - (0.00012828 * idade);
+    
+    // Equação de Siri (% Gordura)
+    const pctGordura = ((4.95 / densidade) - 4.5) * 100;
+    const massaGordaKg = peso * (pctGordura / 100);
+    const massaMagraKg = peso - massaGordaKg;
 
     const avaliacao = {
         data,
         idade,
         peso,
-        ...dobras,
-        soma,
-        densidade,
-        percentualGordura,
-        massaGorda,
-        massaMagra,
-        protocolo: "Jackson-Pollock 7 dobras - mulheres"
+        somaDobras,
+        pctGordura: parseFloat(pctGordura.toFixed(2)),
+        massaMagraKg: parseFloat(massaMagraKg.toFixed(2)),
+        massaGordaKg: parseFloat(massaGordaKg.toFixed(2))
     };
 
-    // Uma avaliação por data: evita duplicação no mesmo dia.
-    avaliacoesDobras = avaliacoesDobras.filter(a => a.data !== data);
-    avaliacoesDobras.push(avaliacao);
-    avaliacoesDobras.sort((a, b) => a.data.localeCompare(b.data));
+    const historico = JSON.parse(localStorage.getItem('fitness_avaliacao_db') || '[]');
+    historico.push(avaliacao);
+    historico.sort((a, b) => new Date(a.data) - new Date(b.data));
 
-    localStorage.setItem(
-        "avaliacoesDobras",
-        JSON.stringify(avaliacoesDobras)
-    );
+    localStorage.setItem('fitness_avaliacao_db', JSON.stringify(historico));
 
-    const resultado = document.getElementById("resultadoAvaliacao");
-
-    resultado.style.display = "block";
-    resultado.innerHTML = `
-        <div style="padding:15px;margin-top:15px;background:#eef3ff;border-radius:10px;line-height:1.9">
-            <h3>📊 Resultado da avaliação</h3>
-            <strong>Data:</strong> ${formatarDataCorporal(data)}<br>
-            <strong>Soma das dobras:</strong> ${soma.toFixed(1)} mm<br>
-            <strong>Densidade corporal:</strong> ${densidade.toFixed(4)} g/cm³<br>
-            <strong>Percentual de gordura:</strong> ${percentualGordura.toFixed(1)}%<br>
-            <strong>Massa gorda:</strong> ${massaGorda.toFixed(1)} kg<br>
-            <strong>Massa magra estimada:</strong> ${massaMagra.toFixed(1)} kg
+    document.getElementById('resultadoAvaliacao').innerHTML = `
+        <div style="background:#e8f5e9; padding:15px; border-radius:10px; margin-top:15px;">
+            <strong>Resultado Calculado:</strong><br>
+            • % Gordura Corporal: <strong>${avaliacao.pctGordura}%</strong><br>
+            • Massa Magra: <strong>${avaliacao.massaMagraKg} kg</strong><br>
+            • Massa Gorda: <strong>${avaliacao.massaGordaKg} kg</strong>
         </div>
     `;
 
-    carregarHistoricoAvaliacaoCorporal();
-    atualizarGraficosComposicao();
-    gerarRelatorioCorporal();
+    renderizarAvaliacaoCorporal();
 }
 
-// --------------------------------------------------
-// FORMATAÇÃO DE DATA
-// --------------------------------------------------
+function renderizarAvaliacaoCorporal() {
+    const historico = JSON.parse(localStorage.getItem('fitness_avaliacao_db') || '[]');
 
-function formatarDataCorporal(data) {
-    if (!data) return "—";
-
-    const partes = data.split("-");
-
-    return partes.length === 3
-        ? `${partes[2]}/${partes[1]}/${partes[0]}`
-        : data;
-}
-
-function formatarNumeroCorporal(valor) {
-    return Number(valor).toFixed(1).replace(".", ",");
-}
-
-// --------------------------------------------------
-// GRÁFICO DE MASSA MAGRA E GORDURA CORPORAL
-// --------------------------------------------------
-
-function atualizarGraficosComposicao() {
-    const lista = [...avaliacoesDobras].sort(
-        (a, b) => a.data.localeCompare(b.data)
-    );
-
-    const canvasMagra = document.getElementById("graficoMassaMagra");
-    const canvasGordura = document.getElementById("graficoPercentualGordura");
-
-    if (!canvasMagra || !canvasGordura || typeof Chart === "undefined") {
-        return;
+    // Histórico em lista
+    const histEl = document.getElementById('historicoAvaliacaoCorporal');
+    if (histEl) {
+        histEl.innerHTML = historico.slice(-5).reverse().map(a => `
+            <div class="item-historico">
+                📊 <strong>${a.data}</strong> — Peso: ${a.peso}kg | Gordura: ${a.pctGordura}% | Massa Magra: ${a.massaMagraKg}kg
+            </div>
+        `).join('') || '<p>Nenhuma avaliação registrada.</p>';
     }
 
-    if (graficoMassaMagra) graficoMassaMagra.destroy();
-    if (graficoPercentualGordura) graficoPercentualGordura.destroy();
+    if (historico.length === 0) return;
 
-    const datas = lista.map(a => formatarDataCorporal(a.data));
+    const labels = historico.map(a => a.data);
+    const massaMagraData = historico.map(a => a.massaMagraKg);
+    const pctGorduraData = historico.map(a => a.pctGordura);
 
-    graficoMassaMagra = new Chart(canvasMagra, {
-        type: "line",
-        data: {
-            labels: datas,
-            datasets: [{
-                label: "Massa magra (kg)",
-                data: lista.map(a => Number(a.massaMagra)),
-                borderColor: "#25865a",
-                backgroundColor: "rgba(37,134,90,0.12)",
-                borderWidth: 3,
-                pointRadius: 4,
-                tension: 0.25,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    title: {
-                        display: true,
-                        text: "Massa magra (kg)"
-                    }
-                }
-            }
-        }
-    });
-
-    graficoPercentualGordura = new Chart(canvasGordura, {
-        type: "line",
-        data: {
-            labels: datas,
-            datasets: [{
-                label: "Gordura corporal (%)",
-                data: lista.map(a => Number(a.percentualGordura)),
-                borderColor: "#e07832",
-                backgroundColor: "rgba(224,120,50,0.12)",
-                borderWidth: 3,
-                pointRadius: 4,
-                tension: 0.25,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    title: {
-                        display: true,
-                        text: "Gordura corporal (%)"
-                    }
-                }
-            }
-        }
-    });
-}
-
-// --------------------------------------------------
-// HISTÓRICO DAS AVALIAÇÕES
-// --------------------------------------------------
-
-function carregarHistoricoAvaliacaoCorporal() {
-    const lista = document.getElementById("historicoAvaliacaoCorporal");
-
-    if (!lista) return;
-
-    lista.innerHTML = "";
-
-    if (avaliacoesDobras.length === 0) {
-        lista.innerHTML = "<p>Nenhuma avaliação registrada ainda.</p>";
-        return;
-    }
-
-    [...avaliacoesDobras]
-        .sort((a, b) => b.data.localeCompare(a.data))
-        .forEach(a => {
-            const indice = avaliacoesDobras.findIndex(
-                item => item.data === a.data
-            );
-
-            lista.innerHTML += `
-                <div class="registro-item"
-                     style="display:block;margin-bottom:10px;padding:12px">
-
-                    <strong>${formatarDataCorporal(a.data)}</strong><br>
-                    Peso: ${formatarNumeroCorporal(a.peso)} kg<br>
-                    Gordura corporal:
-                    ${formatarNumeroCorporal(a.percentualGordura)}%<br>
-                    Massa gorda:
-                    ${formatarNumeroCorporal(a.massaGorda)} kg<br>
-                    Massa magra:
-                    ${formatarNumeroCorporal(a.massaMagra)} kg<br>
-
-                    <small>
-                        Dobras (mm): peitoral ${a.peitoral},
-                        axilar ${a.axilarMedia},
-                        tríceps ${a.triceps},
-                        subescapular ${a.subescapular},
-                        abdominal ${a.abdominal},
-                        supra-ilíaca ${a.supraIliaca},
-                        coxa ${a.coxa}
-                    </small>
-
-                    <br>
-                    <button onclick="apagarAvaliacaoCorporal(${indice})">
-                        Excluir
-                    </button>
-                </div>
-            `;
+    // Gráfico de Massa Magra
+    const ctxMagra = document.getElementById('graficoMassaMagra');
+    if (ctxMagra) {
+        if (chartMassaMagra) chartMassaMagra.destroy();
+        chartMassaMagra = new Chart(ctxMagra, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Massa Magra (kg)',
+                    data: massaMagraData,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true
+                }]
+            },
+            options: { responsive: true }
         });
+    }
+
+    // Gráfico de % Gordura
+    const ctxGordura = document.getElementById('graficoPercentualGordura');
+    if (ctxGordura) {
+        if (chartGordura) chartGordura.destroy();
+        chartGordura = new Chart(ctxGordura, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '% Gordura Corporal',
+                    data: pctGorduraData,
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    fill: true
+                }]
+            },
+            options: { responsive: true }
+        });
+    }
 }
-
-function apagarAvaliacaoCorporal(indice) {
-    if (!confirm("Deseja excluir esta avaliação corporal?")) return;
-
-    avaliacoesDobras.splice(indice, 1);
-
-    localStorage.setItem(
-        "avaliacoesDobras",
-        JSON.stringify(avaliacoesDobras)
-    );
-
-    carregarHistoricoAvaliacaoCorporal();
-    atualizarGraficosComposicao();
-    gerarRelatorioCorporal();
-}
-
-// --------------------------------------------------
-// RELATÓRIO: PRIMEIRA AVALIAÇÃO X MAIS RECENTE
-// --------------------------------------------------
 
 function gerarRelatorioCorporal() {
-    const alvo = document.getElementById("relatorioCorporal");
-
-    if (!alvo) return;
-
-    const lista = [...avaliacoesDobras].sort(
-        (a, b) => a.data.localeCompare(b.data)
-    );
-
-    if (lista.length < 2) {
-        alvo.innerHTML = `
-            <div style="padding:14px;border:1px solid #ddd;border-radius:10px">
-                Registre pelo menos <strong>duas avaliações em datas diferentes</strong>
-                para gerar o relatório comparativo.
-            </div>
-        `;
+    const historico = JSON.parse(localStorage.getItem('fitness_avaliacao_db') || '[]');
+    if (historico.length < 2) {
+        alert('É necessário ter pelo menos duas avaliações para comparar.');
         return;
     }
 
-    const primeira = lista[0];
-    const recente = lista[lista.length - 1];
+    const primeira = historico[0];
+    const ultima = historico[historico.length - 1];
 
-    const difMagra = recente.massaMagra - primeira.massaMagra;
-    const difGorda = recente.massaGorda - primeira.massaGorda;
-    const difPercentual =
-        recente.percentualGordura - primeira.percentualGordura;
-    const difPeso = recente.peso - primeira.peso;
+    const diffPeso = (ultima.peso - primeira.peso).toFixed(1);
+    const diffGordura = (ultima.pctGordura - primeira.pctGordura).toFixed(1);
+    const diffMagra = (ultima.massaMagraKg - primeira.massaMagraKg).toFixed(1);
 
-    function cartao(titulo, inicial, atual, diferenca, unidade) {
-        const sinal = diferenca > 0 ? "+" : "";
-
-        return `
-            <div style="padding:13px;border:1px solid #ddd;border-radius:10px">
-                <strong>${titulo}</strong>
-                <p>Primeira: ${formatarNumeroCorporal(inicial)} ${unidade}</p>
-                <p>Mais recente: ${formatarNumeroCorporal(atual)} ${unidade}</p>
-                <div style="font-size:21px;font-weight:bold">
-                    ${sinal}${formatarNumeroCorporal(diferenca)} ${unidade}
-                </div>
-                <small>Mais recente menos primeira</small>
-            </div>
-        `;
-    }
-
-    alvo.innerHTML = `
-        <div id="conteudoRelatorioCorporal"
-             style="padding:16px;border:1px solid #ddd;border-radius:12px;background:white;color:#222">
-
-            <div style="text-align:center">
-                <h3>Relatório Comparativo de Avaliação Corporal</h3>
-                <p>Protocolo de 7 dobras cutâneas — estimativas</p>
-            </div>
-
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
-                <div style="padding:12px;background:#f4f6f8;border-radius:9px">
-                    <strong>Primeira avaliação</strong><br>
-                    ${formatarDataCorporal(primeira.data)}<br>
-                    Peso: ${formatarNumeroCorporal(primeira.peso)} kg
-                </div>
-
-                <div style="padding:12px;background:#f4f6f8;border-radius:9px">
-                    <strong>Avaliação mais recente</strong><br>
-                    ${formatarDataCorporal(recente.data)}<br>
-                    Peso: ${formatarNumeroCorporal(recente.peso)} kg
-                </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px">
-                ${cartao("Massa magra", primeira.massaMagra, recente.massaMagra, difMagra, "kg")}
-                ${cartao("Massa gorda", primeira.massaGorda, recente.massaGorda, difGorda, "kg")}
-                ${cartao("Percentual de gordura", primeira.percentualGordura, recente.percentualGordura, difPercentual, "p.p.")}
-            </div>
-
-            <div style="margin-top:14px;padding:12px;background:#f4f6f8;border-radius:9px">
-                <strong>Variação do peso total:</strong>
-                ${difPeso > 0 ? "+" : ""}${formatarNumeroCorporal(difPeso)} kg
-
-                <p style="font-size:12px">
-                    Os valores são estimativas. Para comparar a evolução,
-                    procure realizar as avaliações com o mesmo protocolo,
-                    técnica e condições semelhantes.
-                </p>
-            </div>
+    document.getElementById('relatorioCorporal').innerHTML = `
+        <div style="background:#f8f9fa; padding:15px; border:1px solid #ddd; border-radius:10px; margin-top:15px;">
+            <h4>Relatório de Evolução (${primeira.data} ➔ ${ultima.data})</h4>
+            <p>• Variação de Peso: <strong>${diffPeso > 0 ? '+' : ''}${diffPeso} kg</strong></p>
+            <p>• Variação de Gordura: <strong>${diffGordura > 0 ? '+' : ''}${diffGordura}%</strong></p>
+            <p>• Variação de Massa Magra: <strong>${diffMagra > 0 ? '+' : ''}${diffMagra} kg</strong></p>
         </div>
     `;
 }
 
-// --------------------------------------------------
-// IMPRIMIR OU SALVAR RELATÓRIO EM PDF
-// --------------------------------------------------
-
 function imprimirRelatorioCorporal() {
-    gerarRelatorioCorporal();
-
-    const conteudo = document.getElementById("conteudoRelatorioCorporal");
-
-    if (
-        avaliacoesDobras.length < 2 ||
-        !conteudo ||
-        !conteudo.innerText.includes("Primeira avaliação")
-    ) {
-        alert("Registre pelo menos duas avaliações antes de imprimir.");
-        return;
-    }
-
-    const janela = window.open("", "_blank");
-
-    if (!janela) {
-        alert("Permita a abertura de janelas para imprimir ou salvar em PDF.");
-        return;
-    }
-
-    janela.document.write(`
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-        <head>
-            <meta charset="UTF-8">
-            <title>Relatório Corporal</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    margin: 24px;
-                    color: #222;
-                }
-                @media print {
-                    body { margin: 10mm; }
-                }
-            </style>
-        </head>
-        <body>
-            ${conteudo.outerHTML}
-            <script>
-                window.onload = function() {
-                    window.print();
-                };
-            <\/script>
-        </body>
-        </html>
-    `);
-
-    janela.document.close();
+    window.print();
 }
-
-// --------------------------------------------------
-// SINCRONIZAÇÃO COM O GITHUB GIST
-// Inclui avaliações corporais junto dos demais dados.
-// --------------------------------------------------
-
-async function uploadParaNuvem() {
-    const gistId = localStorage.getItem("github_gist_id");
-    const token = localStorage.getItem("github_token");
-
-    if (!gistId || !token) {
-        alert("Configure o ID do Gist e o Token na aba Nuvem.");
-        return;
-    }
-
-    const dados = {
-        treinos: JSON.parse(localStorage.getItem("treinos") || "[]"),
-        pesos: JSON.parse(localStorage.getItem("pesos") || "[]"),
-        injecoes: JSON.parse(localStorage.getItem("injecoes") || "[]"),
-        avaliacoesDobras: JSON.parse(
-            localStorage.getItem("avaliacoesDobras") || "[]"
-        )
-    };
-
-    try {
-        const resposta = await fetch(
-            `https://api.github.com/gists/${gistId}`,
-            {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                    Accept: "application/vnd.github+json"
-                },
-                body: JSON.stringify({
-                    files: {
-                        "dados_fitness.json": {
-                            content: JSON.stringify(dados, null, 2)
-                        }
-                    }
-                })
-            }
-        );
-
-        if (resposta.ok) {
-            alert("✅ Dados enviados para a nuvem, incluindo as avaliações corporais!");
-        } else {
-            alert("❌ Erro ao enviar. Verifique o ID do Gist e o Token.");
-        }
-    } catch (erro) {
-        console.error(erro);
-        alert("Erro de conexão ao enviar os dados.");
-    }
-}
-
-async function downloadDaNuvem(manual = true) {
-    const gistId = localStorage.getItem("github_gist_id");
-    const token = localStorage.getItem("github_token");
-
-    if (!gistId || !token) {
-        if (manual) alert("Configure o ID do Gist e o Token na aba Nuvem.");
-        return;
-    }
-
-    if (
-        manual &&
-        !confirm("Isso substituirá os dados locais pelos dados da nuvem. Continuar?")
-    ) {
-        return;
-    }
-
-    try {
-        const resposta = await fetch(
-            `https://api.github.com/gists/${gistId}?t=${Date.now()}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: "application/vnd.github+json"
-                }
-            }
-        );
-
-        if (!resposta.ok) {
-            if (manual) alert("Erro ao baixar. Verifique o ID do Gist e o Token.");
-            return;
-        }
-
-        const dadosGist = await resposta.json();
-        const arquivo =
-            dadosGist.files["dados_fitness.json"] ||
-            Object.values(dadosGist.files)[0];
-
-        if (!arquivo || !arquivo.content) {
-            if (manual) alert("Não encontrei os dados no Gist.");
-            return;
-        }
-
-        const dados = JSON.parse(arquivo.content);
-
-        ["treinos", "pesos", "injecoes", "avaliacoesDobras"].forEach(chave => {
-            localStorage.setItem(chave, JSON.stringify(dados[chave] || []));
-        });
-
-        if (typeof historico !== "undefined") historico = dados.treinos || [];
-        if (typeof pesos !== "undefined") pesos = dados.pesos || [];
-        if (typeof injecoes !== "undefined") injecoes = dados.injecoes || [];
-
-        avaliacoesDobras = dados.avaliacoesDobras || [];
-
-        if (typeof renderizarTudo === "function") renderizarTudo();
-
-        carregarHistoricoAvaliacaoCorporal();
-        atualizarGraficosComposicao();
-        gerarRelatorioCorporal();
-
-        if (manual) {
-            alert("✅ Dados baixados e atualizados!");
-        }
-    } catch (erro) {
-        console.error(erro);
-        if (manual) alert("Erro ao baixar os dados do GitHub.");
-    }
-}
-
-// --------------------------------------------------
-// INICIALIZAÇÃO
-// --------------------------------------------------
-
-document.addEventListener("DOMContentLoaded", function() {
-    carregarHistoricoAvaliacaoCorporal();
-    atualizarGraficosComposicao();
-    gerarRelatorioCorporal();
-});
