@@ -1,384 +1,660 @@
-/* ==========================================================================
-   PAINEL FITNESS COMPLETO - LÓGICA CORE, GRÁFICOS E PERSISTÊNCIA LOCAL/NUVEM
-   ========================================================================== */
 
-// Instâncias Globais dos Gráficos (evita erro de re-renderização)
+/* Painel Fitness - compatibilidade com dados antigos e Gemini */
+
+const STORAGE_KEYS = {
+  TREINOS: 'fitness_treinos_db',
+  PESO: 'fitness_peso_db',
+  INJECOES: 'fitness_injecoes_db',
+  AVALIACAO: 'fitness_avaliacao_db',
+  NUVEM_CONFIG: 'fitness_nuvem_config'
+};
+
 let chartMensal = null;
 let chartPeso = null;
 
-// Estrutura de Armazenamento no LocalStorage
-const STORAGE_KEYS = {
-    TREINOS: 'fitness_treinos_db',
-    PESO: 'fitness_peso_db',
-    INJECOES: 'fitness_injecoes_db',
-    AVALIACAO: 'fitness_avaliacao_db',
-    NUVEM_CONFIG: 'fitness_nuvem_config'
-};
+function lerLista(chaveNova, chaveAntiga, normalizar = x => x) {
+  let nova = [];
 
-/* --------------------------------------------------------------------------
-   1. GERENCIAMENTO DE ABAS E EVENTOS DE INICIALIZAÇÃO
-   -------------------------------------------------------------------------- */
-document.addEventListener('DOMContentLoaded', () => {
-    // Define a data padrão para o dia atual nos inputs de data
-    const hoje = new Date().toISOString().split('T')[0];
-    if (document.getElementById('dataPeso')) document.getElementById('dataPeso').value = hoje;
-    if (document.getElementById('dataInjecao')) document.getElementById('dataInjecao').value = hoje;
-    if (document.getElementById('dataAvaliacao')) document.getElementById('dataAvaliacao').value = hoje;
+  try {
+    nova = JSON.parse(localStorage.getItem(chaveNova) || '[]');
+  } catch (e) {
+    console.error('Erro ao ler dados novos:', e);
+  }
 
-    // Carrega a interface inicial
-    renderizarTreinos();
-    carregarNuvemConfig();
-});
+  if (Array.isArray(nova) && nova.length > 0) {
+    return nova.map(normalizar);
+  }
 
-function abrirAba(nomeAba) {
-    const abas = ['abaTreinos', 'abaPeso', 'abaInj', 'abaNuvem'];
-    const tabsButtons = ['tabTreinos', 'tabPeso', 'tabInj', 'tabNuvem'];
+  if (chaveAntiga) {
+    try {
+      const antiga = JSON.parse(
+        localStorage.getItem(chaveAntiga) || '[]'
+      );
 
-    abas.forEach(aba => {
-        const el = document.getElementById(aba);
-        if (el) el.style.display = 'none';
-    });
-
-    tabsButtons.forEach(btn => {
-        const el = document.getElementById(btn);
-        if (el) el.classList.remove('active');
-    });
-
-    // Ativa a aba selecionada
-    if (nomeAba === 'treinos') {
-        document.getElementById('abaTreinos').style.display = 'block';
-        document.getElementById('tabTreinos').classList.add('active');
-        renderizarTreinos();
-    } else if (nomeAba === 'peso') {
-        document.getElementById('abaPeso').style.display = 'block';
-        document.getElementById('tabPeso').classList.add('active');
-        renderizarPeso();
-        if (typeof renderizarAvaliacaoCorporal === 'function') {
-            renderizarAvaliacaoCorporal();
-        }
-    } else if (nomeAba === 'inj') {
-        document.getElementById('abaInj').style.display = 'block';
-        document.getElementById('tabInj').classList.add('active');
-        renderizarInjecoes();
-    } else if (nomeAba === 'nuvem') {
-        document.getElementById('abaNuvem').style.display = 'block';
-        document.getElementById('tabNuvem').classList.add('active');
+      if (Array.isArray(antiga) && antiga.length > 0) {
+        return antiga.map(normalizar);
+      }
+    } catch (e) {
+      console.error('Erro ao ler dados antigos:', e);
     }
+  }
+
+  return Array.isArray(nova) ? nova.map(normalizar) : [];
 }
 
-/* --------------------------------------------------------------------------
-   2. ABA TREINOS (LOGICA + GRÁFICO MENSAL)
-   -------------------------------------------------------------------------- */
+function gravarLista(chaveNova, chaveAntiga, dados) {
+  const conteudo = JSON.stringify(dados);
+
+  localStorage.setItem(chaveNova, conteudo);
+
+  if (chaveAntiga) {
+    localStorage.setItem(chaveAntiga, conteudo);
+  }
+}
+
+function normalizarTreino(item) {
+  return typeof item === 'string'
+    ? item
+    : item && item.data
+      ? item.data
+      : '';
+}
+
 function obterTreinos() {
-    const dados = localStorage.getItem(STORAGE_KEYS.TREINOS);
-    return dados ? JSON.parse(dados) : [];
+  return lerLista(
+    STORAGE_KEYS.TREINOS,
+    'treinos',
+    normalizarTreino
+  ).filter(Boolean);
+}
+
+function obterPesos() {
+  return lerLista(
+    STORAGE_KEYS.PESO,
+    'pesos',
+    p => ({
+      ...p,
+      peso: Number(p.peso),
+      data: p.data
+    })
+  ).filter(p => p.data && Number.isFinite(p.peso));
+}
+
+function obterInjecoes() {
+  return lerLista(
+    STORAGE_KEYS.INJECOES,
+    'injecoes',
+    i => typeof i === 'string'
+      ? { data: i, dose: 'Não informada' }
+      : { ...i, dose: i.dose || 'Não informada' }
+  ).filter(i => i.data);
+}
+
+function salvarTreinos(dados) {
+  gravarLista(STORAGE_KEYS.TREINOS, 'treinos', dados);
+}
+
+function salvarPesos(dados) {
+  gravarLista(STORAGE_KEYS.PESO, 'pesos', dados);
+}
+
+function salvarInjecoes(dados) {
+  gravarLista(STORAGE_KEYS.INJECOES, 'injecoes', dados);
+}
+
+function dataLocalHoje() {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const hoje = dataLocalHoje();
+
+  ['dataPeso', 'dataInjecao', 'dataAvaliacao'].forEach(id => {
+    const campo = document.getElementById(id);
+    if (campo && !campo.value) campo.value = hoje;
+  });
+
+  renderizarTreinos();
+  renderizarPeso();
+  renderizarInjecoes();
+  carregarNuvemConfig();
+
+  if (typeof renderizarAvaliacaoCorporal === 'function') {
+    renderizarAvaliacaoCorporal();
+  }
+});
+
+function abrirAba(nome) {
+  const mapa = {
+    treinos: ['abaTreinos', 'tabTreinos'],
+    peso: ['abaPeso', 'tabPeso'],
+    inj: ['abaInj', 'tabInj'],
+    nuvem: ['abaNuvem', 'tabNuvem']
+  };
+
+  Object.values(mapa).forEach(([aba, tab]) => {
+    const a = document.getElementById(aba);
+    const t = document.getElementById(tab);
+
+    if (a) a.style.display = 'none';
+    if (t) t.classList.remove('active');
+  });
+
+  const selecionada = mapa[nome];
+  if (!selecionada) return;
+
+  const [aba, tab] = selecionada;
+  const elementoAba = document.getElementById(aba);
+  const elementoTab = document.getElementById(tab);
+
+  if (elementoAba) elementoAba.style.display = 'block';
+  if (elementoTab) elementoTab.classList.add('active');
+
+  if (nome === 'treinos') renderizarTreinos();
+
+  if (nome === 'peso') {
+    renderizarPeso();
+    if (typeof renderizarAvaliacaoCorporal === 'function') {
+      renderizarAvaliacaoCorporal();
+    }
+  }
+
+  if (nome === 'inj') renderizarInjecoes();
 }
 
 function salvarRegistro() {
-    const hoje = new Date().toISOString().split('T')[0];
-    const treinos = obterTreinos();
+  const hoje = dataLocalHoje();
+  const lista = obterTreinos();
 
-    if (!treinos.includes(hoje)) {
-        treinos.push(hoje);
-        localStorage.setItem(STORAGE_KEYS.TREINOS, JSON.stringify(treinos));
-        alert('Treino de hoje registrado com sucesso!');
-    } else {
-        alert('Você já registrou o treino de hoje.');
-    }
-    renderizarTreinos();
+  if (lista.includes(hoje)) {
+    alert('Você já registrou o treino de hoje.');
+    return;
+  }
+
+  lista.push(hoje);
+  lista.sort();
+  salvarTreinos(lista);
+  renderizarTreinos();
+
+  alert('Treino de hoje registrado com sucesso!');
 }
 
 function abrirRegistroData() {
-    document.getElementById('modal').style.display = 'flex';
+  const modal = document.getElementById('modal');
+  const campo = document.getElementById('dataTreino');
+
+  if (modal) modal.style.display = 'flex';
+  if (campo && !campo.value) campo.value = dataLocalHoje();
 }
 
 function fecharModal() {
-    document.getElementById('modal').style.display = 'none';
+  const modal = document.getElementById('modal');
+  if (modal) modal.style.display = 'none';
 }
 
 function registrarDataEscolhida() {
-    const dataInput = document.getElementById('dataTreino').value;
-    if (!dataInput) {
-        alert('Selecione uma data válida.');
-        return;
-    }
+  const data = document.getElementById('dataTreino')?.value;
 
-    const treinos = obterTreinos();
-    if (!treinos.includes(dataInput)) {
-        treinos.push(dataInput);
-        treinos.sort();
-        localStorage.setItem(STORAGE_KEYS.TREINOS, JSON.stringify(treinos));
-        alert('Treino antigo registrado!');
-    } else {
-        alert('Data já consta no histórico.');
-    }
-    fecharModal();
-    renderizarTreinos();
+  if (!data) {
+    alert('Selecione uma data válida.');
+    return;
+  }
+
+  const lista = obterTreinos();
+
+  if (lista.includes(data)) {
+    alert('Essa data já consta no histórico.');
+    return;
+  }
+
+  lista.push(data);
+  lista.sort();
+
+  salvarTreinos(lista);
+  fecharModal();
+  renderizarTreinos();
+
+  alert('Treino registrado!');
 }
 
 function resetar() {
-    if (confirm('Atenção: deseja realmente apagar todo o histórico de treinos?')) {
-        localStorage.removeItem(STORAGE_KEYS.TREINOS);
-        renderizarTreinos();
-    }
+  if (!confirm(
+    'Atenção: deseja realmente apagar todo o histórico de treinos?'
+  )) return;
+
+  salvarTreinos([]);
+  renderizarTreinos();
 }
 
 function mostrarTreinoDia() {
-    const box = document.getElementById('boxTreino');
-    const diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-    const diaHoje = new Date().getDay();
+  const box = document.getElementById('boxTreino');
+  if (!box) return;
 
-    const treinosExemplo = [
-        "Descanso ativo ou Alongamentos leves",
-        "Musculação: Pernas + Esteira 15 min",
-        "Musculação: Membros Superiores + Core",
-        "Musculação: Glúteos e Posteriores + Esteira 15 min",
-        "Musculação: Costas e Ombros",
-        "Musculação: Treino Completo / Cardio",
-        "Caminhada ao ar livre / Lazer"
-    ];
+  const dias = [
+    'Domingo',
+    'Segunda-feira',
+    'Terça-feira',
+    'Quarta-feira',
+    'Quinta-feira',
+    'Sexta-feira',
+    'Sábado'
+  ];
 
-    box.innerHTML = `<strong>Treino sugerido para hoje (${diasSemana[diaHoje]}):</strong><br>${treinosExemplo[diaHoje]}`;
-    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  const treinos = [
+    'Descanso ativo ou alongamentos leves',
+    'Musculação: pernas + esteira 15 min',
+    'Membros superiores + core',
+    'Glúteos e posteriores + esteira 15 min',
+    'Costas e ombros',
+    'Treino completo / cardio',
+    'Caminhada ao ar livre / lazer'
+  ];
+
+  const dia = new Date().getDay();
+
+  box.innerHTML =
+    `<strong>Treino sugerido para hoje (${dias[dia]}):</strong><br>` +
+    treinos[dia];
+
+  box.style.display =
+    box.style.display === 'none' ? 'block' : 'none';
 }
 
 function renderizarTreinos() {
-    const treinos = obterTreinos();
-    const totalMeta = 200;
-    const concluidos = treinos.length;
-    const faltam = Math.max(0, totalMeta - concluidos);
-    const porcentagem = Math.min(100, (concluidos / totalMeta) * 100);
+  const contador = document.getElementById('contador');
+  if (!contador) return;
 
-    // Atualiza Indicadores
-    document.getElementById('contador').innerText = concluidos;
-    document.getElementById('faltamDias').innerText = `Faltam ${faltam} dias`;
-    document.getElementById('progressFill').style.width = `${porcentagem}%`;
+  const lista = obterTreinos();
+  const meta = 200;
 
-    // Renderiza Lista
-    const historicoEl = document.getElementById('historicoLista');
-    if (historicoEl) {
-        historicoEl.innerHTML = treinos.slice(-10).reverse().map(d => `<div class="item-historico">🏋️ Treino em: ${d}</div>`).join('') || '<p>Nenhum treino registrado.</p>';
-    }
+  contador.textContent = lista.length;
 
-    // Renderiza Gráfico Mensal
-    renderizarGraficoMensal(treinos);
+  const faltam = document.getElementById('faltamDias');
+  if (faltam) {
+    faltam.textContent =
+      `Faltam ${Math.max(0, meta - lista.length)} dias`;
+  }
+
+  const progresso = document.getElementById('progressFill');
+  if (progresso) {
+    progresso.style.width =
+      `${Math.min(100, lista.length / meta * 100)}%`;
+  }
+
+  const historico = document.getElementById('historicoLista');
+
+  if (historico) {
+    historico.innerHTML = lista
+      .slice(-10)
+      .reverse()
+      .map(data =>
+        `<div class="item-historico">🏋️ Treino em: ${data}</div>`
+      )
+      .join('') || '<p>Nenhum treino registrado.</p>';
+  }
+
+  renderizarGraficoMensal(lista);
 }
 
-function renderizarGraficoMensal(treinos) {
-    const ctx = document.getElementById('graficoMensal');
-    if (!ctx) return;
+function renderizarGraficoMensal(lista) {
+  const canvas = document.getElementById('graficoMensal');
 
-    // Agrupa os treinos por ano-mês (Ex: 2026-05)
-    const agrupado = {};
-    treinos.forEach(data => {
-        const mesAno = data.substring(0, 7);
-        agrupado[mesAno] = (agrupado[mesAno] || 0) + 1;
-    });
+  if (!canvas || typeof Chart === 'undefined') return;
 
-    const labels = Object.keys(agrupado).sort();
-    const valores = labels.map(l => agrupado[l]);
+  const agrupado = {};
 
-    if (chartMensal) chartMensal.destroy();
+  lista.forEach(data => {
+    const mes = data.slice(0, 7);
+    agrupado[mes] = (agrupado[mes] || 0) + 1;
+  });
 
-    chartMensal = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Treinos Realizados',
-                data: valores,
-                backgroundColor: '#4a57ff'
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: { y: { beginAtZero: true, stepSize: 1 } }
+  if (chartMensal) chartMensal.destroy();
+
+  const meses = Object.keys(agrupado).sort();
+
+  chartMensal = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: meses,
+      datasets: [{
+        label: 'Treinos realizados',
+        data: meses.map(mes => agrupado[mes]),
+        backgroundColor: '#4a57ff'
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 }
         }
-    });
-}
-
-/* --------------------------------------------------------------------------
-   3. ABA PESO & IMC (LOGICA + GRÁFICO EVOLUÇÃO)
-   -------------------------------------------------------------------------- */
-function obterPesos() {
-    const dados = localStorage.getItem(STORAGE_KEYS.PESO);
-    return dados ? JSON.parse(dados) : [];
+      }
+    }
+  });
 }
 
 function registrarPeso() {
-    const data = document.getElementById('dataPeso').value;
-    const peso = parseFloat(document.getElementById('pesoInput').value);
+  const data = document.getElementById('dataPeso')?.value;
+  const textoPeso = document.getElementById('pesoInput')?.value || '';
+  const peso = Number(String(textoPeso).replace(',', '.'));
 
-    if (!data || isNaN(peso) || peso <= 0) {
-        alert('Insira uma data e peso válidos.');
-        return;
-    }
+  if (!data || !Number.isFinite(peso) || peso <= 0) {
+    alert('Insira uma data e um peso válidos.');
+    return;
+  }
 
-    const historico = obterPesos();
-    historico.push({ data, peso });
-    historico.sort((a, b) => new Date(a.data) - new Date(b.data));
+  const historico = obterPesos();
+  const existente = historico.findIndex(p => p.data === data);
 
-    localStorage.setItem(STORAGE_KEYS.PESO, JSON.stringify(historico));
-    document.getElementById('pesoInput').value = '';
-    renderizarPeso();
+  const registro = {
+    data,
+    peso,
+    imc: Number((peso / (1.75 * 1.75)).toFixed(2))
+  };
+
+  if (existente >= 0) {
+    historico[existente] = registro;
+  } else {
+    historico.push(registro);
+  }
+
+  historico.sort((a, b) => a.data.localeCompare(b.data));
+  salvarPesos(historico);
+
+  const campo = document.getElementById('pesoInput');
+  if (campo) campo.value = '';
+
+  renderizarPeso();
+  alert('Peso salvo com sucesso!');
 }
 
 function renderizarPeso() {
-    const historico = obterPesos();
+  const historico = obterPesos();
+  const lista = document.getElementById('listaPeso');
 
-    // Renderiza Lista
-    const listaEl = document.getElementById('listaPeso');
-    if (listaEl) {
-        listaEl.innerHTML = historico.slice(-8).reverse().map(p => `<div class="item-historico">⚖️ ${p.data}: <strong>${p.peso} kg</strong></div>`).join('') || '<p>Nenhum peso registrado.</p>';
-    }
+  if (lista) {
+    lista.innerHTML = historico
+      .slice(-8)
+      .reverse()
+      .map(p =>
+        `<div class="item-historico">⚖️ ${p.data}: ` +
+        `<strong>${p.peso} kg</strong>` +
+        `${p.imc ? ` — IMC ${p.imc}` : ''}</div>`
+      )
+      .join('') || '<p>Nenhum peso registrado.</p>';
+  }
 
-    // Renderiza Gráfico de Peso
-    const ctx = document.getElementById('graficoPeso');
-    if (!ctx) return;
+  const canvas = document.getElementById('graficoPeso');
 
-    const labels = historico.map(h => h.data);
-    const valores = historico.map(h => h.peso);
+  if (!canvas || typeof Chart === 'undefined') return;
 
-    if (chartPeso) chartPeso.destroy();
+  if (chartPeso) chartPeso.destroy();
 
-    chartPeso = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Peso (kg)',
-                data: valores,
-                borderColor: '#28a745',
-                backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: { responsive: true }
-    });
-}
-
-/* --------------------------------------------------------------------------
-   4. ABA INJEÇÕES / APLICAÇÕES
-   -------------------------------------------------------------------------- */
-function obterInjecoes() {
-    const dados = localStorage.getItem(STORAGE_KEYS.INJECOES);
-    return dados ? JSON.parse(dados) : [];
+  chartPeso = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: historico.map(p => p.data),
+      datasets: [{
+        label: 'Peso (kg)',
+        data: historico.map(p => p.peso),
+        borderColor: '#28a745',
+        backgroundColor: 'rgba(40,167,69,.1)',
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: { responsive: true }
+  });
 }
 
 function registrarInjecao() {
-    const data = document.getElementById('dataInjecao').value;
-    const dose = document.getElementById('doseInjecao').value;
+  const data = document.getElementById('dataInjecao')?.value;
+  const dose = document.getElementById('doseInjecao')?.value;
 
-    if (!data) {
-        alert('Selecione a data da aplicação.');
-        return;
-    }
+  if (!data) {
+    alert('Selecione a data da aplicação.');
+    return;
+  }
 
-    const historico = obterInjecoes();
-    historico.push({ data, dose });
-    historico.sort((a, b) => new Date(a.data) - new Date(b.data));
+  const historico = obterInjecoes();
+  historico.push({ data, dose: dose || 'Não informada' });
+  historico.sort((a, b) => a.data.localeCompare(b.data));
 
-    localStorage.setItem(STORAGE_KEYS.INJECOES, JSON.stringify(historico));
-    renderizarInjecoes();
+  salvarInjecoes(historico);
+  renderizarInjecoes();
+
+  alert('Aplicação registrada!');
 }
 
 function renderizarInjecoes() {
-    const historico = obterInjecoes();
-    const listaEl = document.getElementById('listaInjecoes');
-    const proxEl = document.getElementById('proximaAplicacao');
+  const historico = obterInjecoes();
+  const lista = document.getElementById('listaInjecoes');
+  const proxima = document.getElementById('proximaAplicacao');
 
-    if (listaEl) {
-        listaEl.innerHTML = historico.slice(-5).reverse().map(i => `<div class="item-historico">💉 ${i.data} — Dose: <strong>${i.dose}</strong></div>`).join('') || '<p>Nenhuma aplicação registrada.</p>';
-    }
+  if (lista) {
+    lista.innerHTML = historico
+      .slice(-10)
+      .reverse()
+      .map(i =>
+        `<div class="item-historico">💉 ${i.data} — Dose: ` +
+        `<strong>${i.dose}</strong></div>`
+      )
+      .join('') || '<p>Nenhuma aplicação registrada.</p>';
+  }
 
-    if (proxEl && historico.length > 0) {
-        const ultimaData = new Date(historico[historico.length - 1].data);
-        ultimaData.setDate(ultimaData.getDate() + 7); // Intervalo de 7 dias
-        proxEl.innerHTML = `📅 Próxima aplicação estimada: <u>${ultimaData.toLocaleDateString('pt-BR')}</u>`;
-    } else if (proxEl) {
-        proxEl.innerHTML = 'Nenhuma aplicação gravada ainda.';
+  if (proxima) {
+    if (historico.length) {
+      const data = new Date(
+        historico[historico.length - 1].data + 'T12:00:00'
+      );
+
+      data.setDate(data.getDate() + 7);
+
+      proxima.textContent =
+        '📅 Próxima aplicação estimada: ' +
+        data.toLocaleDateString('pt-BR');
+    } else {
+      proxima.textContent = 'Nenhuma aplicação gravada ainda.';
     }
+  }
 }
 
-/* --------------------------------------------------------------------------
-   5. ABA NUVEM (SINCRONIZAÇÃO GITHUB GIST)
-   -------------------------------------------------------------------------- */
 function carregarNuvemConfig() {
-    const config = JSON.parse(localStorage.getItem(STORAGE_KEYS.NUVEM_CONFIG) || '{}');
-    if (config.gistId) document.getElementById('gistIdInput').value = config.gistId;
-    if (config.token) document.getElementById('gistTokenInput').value = config.token;
+  let config = {};
+
+  try {
+    config = JSON.parse(
+      localStorage.getItem(STORAGE_KEYS.NUVEM_CONFIG) || '{}'
+    );
+  } catch (e) {
+    console.error(e);
+  }
+
+  config.gistId =
+    config.gistId || localStorage.getItem('github_gist_id') || '';
+
+  config.token =
+    config.token || localStorage.getItem('github_token') || '';
+
+  const id = document.getElementById('gistIdInput');
+  const token = document.getElementById('gistTokenInput');
+
+  if (id) id.value = config.gistId;
+  if (token) token.value = config.token;
 }
 
 function salvarConfigNuvem() {
-    const gistId = document.getElementById('gistIdInput').value.trim();
-    const token = document.getElementById('gistTokenInput').value.trim();
+  const gistId =
+    document.getElementById('gistIdInput')?.value.trim();
 
-    localStorage.setItem(STORAGE_KEYS.NUVEM_CONFIG, JSON.stringify({ gistId, token }));
-    alert('Configurações salvas no navegador!');
+  const token =
+    document.getElementById('gistTokenInput')?.value.trim();
+
+  if (!gistId || !token) {
+    alert('Preencha o ID do Gist e o token.');
+    return;
+  }
+
+  const config = { gistId, token };
+
+  localStorage.setItem(
+    STORAGE_KEYS.NUVEM_CONFIG,
+    JSON.stringify(config)
+  );
+
+  localStorage.setItem('github_gist_id', gistId);
+  localStorage.setItem('github_token', token);
+
+  alert('Configurações salvas no navegador.');
 }
 
 async function uploadParaNuvem() {
-    const config = JSON.parse(localStorage.getItem(STORAGE_KEYS.NUVEM_CONFIG) || '{}');
-    if (!config.gistId || !config.token) {
-        alert('Configure o Gist ID e o Token do GitHub primeiro!');
-        return;
-    }
+  let config;
 
-    const payload = {
-        treinos: obterTreinos(),
-        pesos: obterPesos(),
-        injecoes: obterInjecoes(),
-        avaliacoes: JSON.parse(localStorage.getItem(STORAGE_KEYS.AVALIACAO) || '[]')
-    };
+  try {
+    config = JSON.parse(
+      localStorage.getItem(STORAGE_KEYS.NUVEM_CONFIG) || '{}'
+    );
+  } catch (e) {
+    alert('Não foi possível ler a configuração da nuvem.');
+    return;
+  }
 
-    try {
-        const response = await fetch(`https://api.github.com/gists/${config.gistId}`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `token ${config.token}`,
-                'Content-Type': 'application/json'
+  if (!config.gistId || !config.token) {
+    alert('Configure o Gist ID e o Token do GitHub primeiro.');
+    return;
+  }
+
+  const payload = {
+    treinos: obterTreinos(),
+    pesos: obterPesos(),
+    injecoes: obterInjecoes(),
+    avaliacoes:
+      typeof obterAvaliacoesCorporais === 'function'
+        ? obterAvaliacoesCorporais()
+        : []
+  };
+
+  try {
+    const resposta = await fetch(
+      `https://api.github.com/gists/${config.gistId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${config.token}`,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          files: {
+            'fitness_data.json': {
+              content: JSON.stringify(payload, null, 2)
             },
-            body: JSON.stringify({
-                files: {
-                    'fitness_data.json': {
-                        content: JSON.stringify(payload, null, 2)
-                    }
-                }
-            })
-        });
+            'dados_fitness.json': {
+              content: JSON.stringify(payload, null, 2)
+            }
+          }
+        })
+      }
+    );
 
-        if (response.ok) {
-            alert('Dados sincronizados com a nuvem com sucesso!');
-        } else {
-            alert('Erro ao enviar dados. Verifique o Token e o Gist ID.');
-        }
-    } catch (err) {
-        console.error(err);
-        alert('Erro de conexão ao acessar a API do GitHub.');
+    if (!resposta.ok) {
+      throw new Error('HTTP ' + resposta.status);
     }
+
+    alert('Dados enviados para o GitHub Gist.');
+  } catch (erro) {
+    console.error(erro);
+    alert(
+      'Não foi possível enviar. Confira a conexão, o Gist ID ' +
+      'e as permissões do token.'
+    );
+  }
 }
 
 async function downloadDaNuvem(alertaManual = false) {
-    const config = JSON.parse(localStorage.getItem(STORAGE_KEYS.NUVEM_CONFIG) || '{}');
-    if (!config.gistId) return;
+  let config;
 
-    try {
-        const response = await fetch(`https://api.github.com/gists/${config.gistId}`);
-        if (response.ok) {
-            const data = await response.json();
-            const conteudo = JSON.parse(data.files['fitness_data.json'].content);
+  try {
+    config = JSON.parse(
+      localStorage.getItem(STORAGE_KEYS.NUVEM_CONFIG) || '{}'
+    );
+  } catch (e) {
+    if (alertaManual) alert('Erro ao ler a configuração da nuvem.');
+    return;
+  }
 
-            if (conteudo.treinos) localStorage.setItem(STORAGE_KEYS.TREINOS, JSON.stringify(conteudo.treinos));
-            if (conteudo.pesos) localStorage.setItem(STORAGE_KEYS.PESO, JSON.stringify(conteudo.pesos));
-            if (conteudo.injecoes) localStorage.setItem(STORAGE_KEYS.INJECOES, JSON.stringify(conteudo.injecoes));
-            if (conteudo.avaliacoes) localStorage.setItem(STORAGE_KEYS.AVALIACAO, JSON.stringify(conteudo.avaliacoes));
+  config.gistId =
+    config.gistId || localStorage.getItem('github_gist_id') || '';
 
-            renderizarTreinos();
-            if (alertaManual) alert('Dados baixados da nuvem e atualizados localmente!');
-        }
-    } catch (err) {
-        console.error(err);
-        if (alertaManual) alert('Erro ao baixar dados do GitHub.');
+  if (!config.gistId) {
+    if (alertaManual) alert('Configure o ID do Gist primeiro.');
+    return;
+  }
+
+  try {
+    const resposta = await fetch(
+      `https://api.github.com/gists/${config.gistId}`
+    );
+
+    if (!resposta.ok) {
+      throw new Error('HTTP ' + resposta.status);
     }
+
+    const gist = await resposta.json();
+    const arquivo =
+      gist.files['fitness_data.json'] ||
+      gist.files['dados_fitness.json'];
+
+    if (!arquivo) {
+      throw new Error('Arquivo de dados não encontrado no Gist.');
+    }
+
+    const dados = JSON.parse(arquivo.content);
+
+    if (Array.isArray(dados.treinos)) {
+      salvarTreinos(dados.treinos.map(normalizarTreino).filter(Boolean));
+    }
+
+    if (Array.isArray(dados.pesos)) {
+      salvarPesos(dados.pesos);
+    }
+
+    if (Array.isArray(dados.injecoes)) {
+      salvarInjecoes(dados.injecoes);
+    }
+
+    if (Array.isArray(dados.avaliacoes)) {
+      localStorage.setItem(
+        STORAGE_KEYS.AVALIACAO,
+        JSON.stringify(dados.avaliacoes)
+      );
+
+      localStorage.setItem(
+        'avaliacoesDobras',
+        JSON.stringify(dados.avaliacoes)
+      );
+    }
+
+    renderizarTreinos();
+    renderizarPeso();
+    renderizarInjecoes();
+
+    if (typeof renderizarAvaliacaoCorporal === 'function') {
+      renderizarAvaliacaoCorporal();
+    }
+
+    if (alertaManual) {
+      alert('Dados baixados e atualizados.');
+    }
+  } catch (erro) {
+    console.error(erro);
+
+    if (alertaManual) {
+      alert('Falha ao baixar: ' + erro.message);
+    }
+  }
 }
