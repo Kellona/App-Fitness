@@ -140,6 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function abrirAba(nome) {
   const abas = {
+  inicio: ["abaInicio", "tabInicio"],
   treinos: ["abaTreinos", "tabTreinos"],
   peso: ["abaPeso", "tabPeso"],
   composicao: ["abaComposicao", "tabComposicao"],
@@ -165,6 +166,9 @@ function abrirAba(nome) {
   if (botao) botao.classList.add("active");
 
   if (nome === "treinos") renderizarTreinos();
+  if (nome === "inicio") {
+  atualizarVisaoGeral();
+}
 
   if (nome === "peso") {
   renderizarPeso();
@@ -777,5 +781,85 @@ async function downloadDaNuvem(alertaManual = true) {
   } catch (erro) {
     console.error(erro);
     if (alertaManual) alert("Não foi possível baixar: " + erro.message);
+  }
+}
+
+function atualizarVisaoGeral() {
+  // 1. Total de treinos registrados
+  const treinos = typeof obterTreinos === "function"
+    ? obterTreinos()
+    : [];
+
+  const elementoTreinos = document.getElementById("resumoTreinos");
+
+  if (elementoTreinos) {
+    elementoTreinos.textContent = treinos.length;
+  }
+
+  // 2. Peso mais recente
+  const pesos = typeof obterPesos === "function"
+    ? obterPesos()
+    : [];
+
+  const elementoPeso = document.getElementById("resumoPeso");
+
+  if (elementoPeso) {
+    const pesosOrdenados = [...pesos].sort((a, b) =>
+      b.data.localeCompare(a.data)
+    );
+
+    if (pesosOrdenados.length > 0) {
+      elementoPeso.textContent =
+        `${pesosOrdenados[0].peso} kg`;
+    } else {
+      elementoPeso.textContent = "Não cadastrado";
+    }
+  }
+
+  // 3. Total de avaliações corporais
+  const avaliacoes =
+    typeof obterAvaliacoesCorporais === "function"
+      ? obterAvaliacoesCorporais()
+      : [];
+
+  const elementoAvaliacoes =
+    document.getElementById("resumoAvaliacoes");
+
+  if (elementoAvaliacoes) {
+    elementoAvaliacoes.textContent = avaliacoes.length;
+  }
+
+  // 4. Próxima aplicação cadastrada
+  const injecoes = typeof obterInjecoes === "function"
+    ? obterInjecoes()
+    : [];
+
+  const elementoAplicacao =
+    document.getElementById("resumoAplicacao");
+
+  if (elementoAplicacao) {
+    const hoje = new Date();
+    const hojeLocal = [
+      hoje.getFullYear(),
+      String(hoje.getMonth() + 1).padStart(2, "0"),
+      String(hoje.getDate()).padStart(2, "0")
+    ].join("-");
+
+    const proximas = injecoes
+      .filter(item => item.data && item.data >= hojeLocal)
+      .sort((a, b) => a.data.localeCompare(b.data));
+
+    if (proximas.length > 0) {
+      const proxima = proximas[0];
+      const dataFormatada =
+        typeof formatarData === "function"
+          ? formatarData(proxima.data)
+          : proxima.data;
+
+      elementoAplicacao.textContent =
+        `${dataFormatada} — ${proxima.dose || "Dose não informada"}`;
+    } else {
+      elementoAplicacao.textContent = "Não cadastrada";
+    }
   }
 }

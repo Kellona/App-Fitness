@@ -28,6 +28,13 @@
         <p class="menu-titulo">MENU PRINCIPAL</p>
 
         <nav class="menu-navegacao">
+            
+<button type="button" class="item-menu"
+    onclick="abrirAba('inicio')" id="tabInicio">
+    <span class="icone-menu">⌂</span>
+    <span>Visão geral</span>
+</button>
+
             <button type="button" class="item-menu active"
                 onclick="abrirAba('treinos')" id="tabTreinos">
                 <span class="icone-menu">⌂</span>
@@ -71,6 +78,43 @@
                 <h1>Seu Painel Fitness</h1>
             </div>
         </header>
+
+<!-- VISÃO GERAL -->
+<div id="abaInicio" style="display:none;">
+    <h2>Olá! 👋</h2>
+    <p>Acompanhe sua evolução, um passo de cada vez.</p>
+
+    <div class="resumo-grid">
+        <div class="resumo-card">
+            <span class="resumo-icone">🏋️</span>
+            <p>Treinos realizados</p>
+            <strong id="resumoTreinos">—</strong>
+        </div>
+
+        <div class="resumo-card">
+            <span class="resumo-icone">⚖️</span>
+            <p>Peso mais recente</p>
+            <strong id="resumoPeso">—</strong>
+        </div>
+
+        <div class="resumo-card">
+            <span class="resumo-icone">📊</span>
+            <p>Avaliações corporais</p>
+            <strong id="resumoAvaliacoes">—</strong>
+        </div>
+
+        <div class="resumo-card">
+            <span class="resumo-icone">💜</span>
+            <p>Próxima aplicação</p>
+            <strong id="resumoAplicacao">—</strong>
+        </div>
+    </div>
+
+    <p class="resumo-observacao">
+        Seus resultados são construídos um dia de cada vez.
+    </p>
+</div>
+<!-- FIM DA VISÃO GERAL -->
 
         <!-- ABA TREINOS -->
         <div id="abaTreinos">
