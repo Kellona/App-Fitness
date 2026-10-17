@@ -144,6 +144,7 @@ function abrirAba(nome) {
   treinos: ["abaTreinos", "tabTreinos"],
   peso: ["abaPeso", "tabPeso"],
   composicao: ["abaComposicao", "tabComposicao"],
+  medidas: ["abaMedidas", "tabMedidas"],
   inj: ["abaInj", "tabInj"],
   nuvem: ["abaNuvem", "tabNuvem"]
 };
