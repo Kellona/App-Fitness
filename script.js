@@ -830,6 +830,10 @@ function atualizarVisaoGeral() {
   }
 
   // 4. Próxima aplicação cadastrada
+  const injecoes = typeof obterInjecoes === "function"
+    ? obterInjecoes()
+    : [];
+
   
   // 4. Próxima aplicação: toda quinta-feira
   const elementoAplicacao =
