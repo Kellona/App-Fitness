@@ -314,7 +314,59 @@ function gerarRelatorioCorporal() {
 }
 
 function imprimirRelatorioCorporal() {
-  window.print();
+  const relatorio = document.getElementById("relatorioCorporal");
+
+  if (!relatorio || !relatorio.innerHTML.trim()) {
+    alert("Gere o relatório comparativo antes de imprimir.");
+    return;
+  }
+
+  const janela = window.open("", "_blank");
+
+  if (!janela) {
+    alert("O navegador bloqueou a janela de impressão. Permita pop-ups para este site.");
+    return;
+  }
+
+  const estilos = Array.from(
+    document.querySelectorAll('link[rel="stylesheet"], style')
+  ).map(elemento => elemento.outerHTML).join("\n");
+
+  janela.document.open();
+  janela.document.write(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Relatório de Avaliação Corporal</title>
+      ${estilos}
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          padding: 24px;
+          color: #222;
+          background: #fff;
+        }
+        @media print {
+          body { padding: 0; }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Relatório de Avaliação Corporal</h1>
+      ${relatorio.innerHTML}
+    </body>
+    </html>
+  `);
+  janela.document.close();
+
+  janela.onload = function () {
+    janela.focus();
+    janela.print();
+  };
+}
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
