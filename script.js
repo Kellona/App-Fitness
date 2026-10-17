@@ -639,8 +639,176 @@ async function downloadDaNuvem(alertaManual = false) {
       );
     }
 
-    renderizarTreinos();
-    renderizarPeso();
+    
+function renderizarTreinos() {
+  const contador = document.getElementById('contador');
+  const lista = document.getElementById('historicoLista');
+  const treinos = obterTreinos();
+
+  if (contador) contador.textContent = treinos.length;
+
+  const faltam = document.getElementById('faltamDias');
+  if (faltam) {
+    faltam.textContent =
+      `Faltam ${Math.max(0, 200 - treinos.length)} dias`;
+  }
+
+  const progresso = document.getElementById('progressFill');
+  if (progresso) {
+    progresso.style.width =
+      `${Math.min(100, treinos.length / 200 * 100)}%`;
+  }
+
+  if (lista) {
+    lista.innerHTML = treinos
+      .map((data, indice) => ({ data, indice }))
+      .reverse()
+      .map(item => `
+        <div class="item-historico"
+             style="display:flex;justify-content:space-between;
+                    align-items:center;gap:10px;margin-bottom:8px;">
+          <span>🏋️ Treino em: ${item.data}</span>
+          <button type="button"
+            onclick="apagarTreino('${item.data}')"
+            style="background:#dc3545;color:white;border:0;
+                   padding:7px 10px;border-radius:6px;cursor:pointer;">
+            Excluir
+          </button>
+        </div>
+      `).join('') || '<p>Nenhum treino registrado.</p>';
+  }
+
+  renderizarGraficoMensal(treinos);
+}
+
+function apagarTreino(data) {
+  if (!confirm(`Deseja excluir o treino do dia ${data}?`)) return;
+
+  const treinos = obterTreinos();
+  const indice = treinos.indexOf(data);
+
+  if (indice === -1) {
+    alert('Treino não encontrado.');
+    return;
+  }
+
+  treinos.splice(indice, 1);
+  salvarTreinos(treinos);
+  renderizarTreinos();
+}
+
+   
+function obterClassificacaoIMC(imc) {
+  if (imc < 18.5) {
+    return { texto: 'Abaixo do peso', cor: '#4DA6FF' };
+  }
+  if (imc < 25) {
+    return { texto: 'Peso adequado', cor: '#4CAF50' };
+  }
+  if (imc < 30) {
+    return { texto: 'Sobrepeso', cor: '#FFD54F' };
+  }
+  if (imc < 35) {
+    return { texto: 'Obesidade grau I', cor: '#FF9800' };
+  }
+  if (imc < 40) {
+    return { texto: 'Obesidade grau II', cor: '#F44336' };
+  }
+  return { texto: 'Obesidade grau III', cor: '#9C27B0' };
+}
+
+function renderizarPeso() {
+  const historico = obterPesos();
+  const lista = document.getElementById('listaPeso');
+
+  if (lista) {
+    const legenda = `
+      <div style="margin-bottom:15px;padding:12px;background:#f8f8f8;
+                  border-radius:10px;border:1px solid #ddd;
+                  font-size:14px;line-height:1.9;">
+        <strong>📊 Classificação do IMC</strong><br>
+        <span style="color:#1680d4">🔵</span> Abaixo de 18,5 — Abaixo do peso<br>
+        <span style="color:#4CAF50">🟢</span> 18,5 a 24,9 — Peso adequado<br>
+        <span style="color:#d6a600">🟡</span> 25,0 a 29,9 — Sobrepeso<br>
+        <span style="color:#FF9800">🟠</span> 30,0 a 34,9 — Obesidade grau I<br>
+        <span style="color:#F44336">🔴</span> 35,0 a 39,9 — Obesidade grau II<br>
+        <span style="color:#9C27B0">🟣</span> 40,0 ou mais — Obesidade grau III
+      </div>`;
+
+    const registros = historico
+      .map((p, indice) => ({ ...p, indice }))
+      .sort((a, b) => b.data.localeCompare(a.data));
+
+    lista.innerHTML = legenda + (
+      registros.map(p => {
+        const imc = Number(p.imc) ||
+          (Number(p.peso) / (1.75 * 1.75));
+
+        const classificacao = obterClassificacaoIMC(imc);
+
+        return `
+          <div style="border-left:7px solid ${classificacao.cor};
+                      background:#f8f8f8;padding:12px;margin-bottom:9px;
+                      border-radius:8px;display:flex;
+                      justify-content:space-between;align-items:center;
+                      gap:10px;">
+            <div>
+              <strong>${p.data}</strong><br>
+              ${Number(p.peso).toFixed(1)} kg —
+              <strong>IMC: ${imc.toFixed(2)}</strong><br>
+              <span style="color:${classificacao.cor};font-weight:bold;">
+                ${classificacao.texto}
+              </span>
+            </div>
+            <button type="button"
+              onclick="apagarPeso('${p.data}')"
+              style="background:#dc3545;color:white;border:0;
+                     padding:7px 10px;border-radius:6px;cursor:pointer;">
+              Excluir
+            </button>
+          </div>`;
+      }).join('') || '<p>Nenhum peso registrado.</p>'
+    );
+  }
+
+  const canvas = document.getElementById('graficoPeso');
+
+  if (canvas && typeof Chart !== 'undefined') {
+    if (chartPeso) chartPeso.destroy();
+
+    chartPeso = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: historico.map(p => p.data),
+        datasets: [{
+          label: 'Peso (kg)',
+          data: historico.map(p => Number(p.peso)),
+          borderColor: '#28a745',
+          backgroundColor: 'rgba(40,167,69,.1)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: { responsive: true }
+    });
+  }
+}
+
+function apagarPeso(data) {
+  if (!confirm(`Deseja excluir a pesagem do dia ${data}?`)) return;
+
+  const historico = obterPesos();
+  const atualizado = historico.filter(p => p.data !== data);
+
+  if (atualizado.length === historico.length) {
+    alert('Pesagem não encontrada.');
+    return;
+  }
+
+  salvarPesos(atualizado);
+  renderizarPeso();
+}
+
     renderizarInjecoes();
 
     if (typeof renderizarAvaliacaoCorporal === 'function') {

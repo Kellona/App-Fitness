@@ -324,5 +324,120 @@ function imprimirRelatorioCorporal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  
+function renderizarAvaliacaoCorporal() {
+  const historico = obterAvaliacoesCorporais()
+    .sort((a, b) => b.data.localeCompare(a.data));
+
+  const lista =
+    document.getElementById('historicoDobras') ||
+    document.getElementById('historicoAvaliacaoCorporal');
+
+  if (lista) {
+    lista.innerHTML = historico.map(a => `
+      <div class="item-historico"
+           style="padding:12px;margin-bottom:10px;border:1px solid #ddd;
+                  border-radius:8px;">
+        <strong>📊 ${a.data}</strong><br>
+        Peso: ${Number(a.peso).toFixed(1)} kg<br>
+        Gordura corporal:
+        ${Number(a.pctGordura).toFixed(2)}%<br>
+        Massa gorda: ${Number(a.massaGordaKg).toFixed(2)} kg<br>
+        Massa magra: ${Number(a.massaMagraKg).toFixed(2)} kg
+
+        <div style="text-align:right;margin-top:10px;">
+          <button type="button"
+            onclick="apagarAvaliacaoCorporal('${a.data}')"
+            style="background:#dc3545;color:white;border:0;
+                   padding:8px 12px;border-radius:6px;cursor:pointer;">
+            Excluir avaliação
+          </button>
+        </div>
+      </div>
+    `).join('') || '<p>Nenhuma avaliação registrada.</p>';
+  }
+
+  const canvasMagra = document.getElementById('graficoMassaMagra');
+  const canvasGordura =
+    document.getElementById('graficoPercentualGordura');
+
+  if (typeof Chart === 'undefined') return;
+
+  if (historico.length === 0) {
+    if (chartMassaMagra) {
+      chartMassaMagra.destroy();
+      chartMassaMagra = null;
+    }
+
+    if (chartGordura) {
+      chartGordura.destroy();
+      chartGordura = null;
+    }
+
+    return;
+  }
+
+  const ordenadas = [...historico].reverse();
+  const datas = ordenadas.map(a => a.data);
+
+  if (canvasMagra) {
+    if (chartMassaMagra) chartMassaMagra.destroy();
+
+    chartMassaMagra = new Chart(canvasMagra, {
+      type: 'line',
+      data: {
+        labels: datas,
+        datasets: [{
+          label: 'Massa magra (kg)',
+          data: ordenadas.map(a => a.massaMagraKg),
+          borderColor: '#007bff',
+          tension: 0.25
+        }]
+      },
+      options: { responsive: true }
+    });
+  }
+
+  if (canvasGordura) {
+    if (chartGordura) chartGordura.destroy();
+
+    chartGordura = new Chart(canvasGordura, {
+      type: 'line',
+      data: {
+        labels: datas,
+        datasets: [{
+          label: 'Gordura corporal (%)',
+          data: ordenadas.map(a => a.pctGordura),
+          borderColor: '#dc3545',
+          tension: 0.25
+        }]
+      },
+      options: { responsive: true }
+    });
+  }
+}
+
+function apagarAvaliacaoCorporal(data) {
+  if (!confirm(
+    `Deseja excluir a avaliação corporal de ${data}? ` +
+    'Essa ação não poderá ser desfeita.'
+  )) return;
+
+  const atualizadas = obterAvaliacoesCorporais()
+    .filter(a => a.data !== data);
+
+  salvarListaAvaliacoes(atualizadas);
+
+  const resultado = document.getElementById('resultadoAvaliacao');
+  if (resultado) resultado.innerHTML = '';
+
   renderizarAvaliacaoCorporal();
+
+  if (typeof gerarRelatorioCorporal === 'function') {
+    gerarRelatorioCorporal();
+  }
+
+  alert('Avaliação excluída.');
+}
+
 });
