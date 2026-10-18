@@ -1005,8 +1005,17 @@ function renderizarMedidasCorporais() {
           <div class="item-historico"
                style="padding:12px;margin-bottom:10px;
                       border:1px solid #ddd;border-radius:8px">
-            <strong>📏 ${formatarData(item.data)}</strong>
-            ${linhas}
+            
+<strong>📏 ${formatarData(item.data)}</strong>
+${linhas}
+<div style="text-align:right;margin-top:10px">
+  <button type="button"
+    onclick="excluirMedidasCorporais('${item.data}')"
+    style="background:#dc3545;color:white;border:0;padding:8px 12px;border-radius:6px;cursor:pointer">
+    Excluir medição
+  </button>
+</div>
+
           </div>
         `;
       }).join("") || "<p>Nenhuma medida registrada.</p>";
@@ -1093,3 +1102,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderizarMedidasCorporais();
 });
+
+function excluirMedidasCorporais(data) {
+  const confirmar = confirm(
+    "Deseja excluir todas as medidas registradas em " +
+    formatarData(data) + "?"
+  );
+
+  if (!confirmar) return;
+
+  const historico = obterMedidasCorporais()
+    .filter(item => item.data !== data);
+
+  try {
+    localStorage.setItem(
+      CHAVE_MEDIDAS_CORPORAIS,
+      JSON.stringify(historico)
+    );
+
+    renderizarMedidasCorporais();
+    alert("Medição excluída com sucesso!");
+  } catch (erro) {
+    console.error("Erro ao excluir medição:", erro);
+    alert("Não foi possível excluir a medição.");
+  }
+}
