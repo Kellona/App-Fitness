@@ -97,12 +97,26 @@ function salvarAvaliacaoCorporal() {
 
   const soma = dobras.reduce((total, valor) => total + valor, 0);
 
-  // Jackson-Pollock de 7 dobras para mulheres.
-  const densidade =
-    1.097 -
-    0.00046971 * soma +
-    0.00000056 * soma * soma -
-    0.00012828 * idade;
+  
+  const sexo = document.getElementById("sexoAvaliacao")?.value || "feminino";
+
+  let densidade;
+
+  if (sexo === "masculino") {
+    // Jackson-Pollock de 7 dobras para homens.
+    densidade =
+      1.112 -
+      0.00043499 * soma +
+      0.00000055 * soma * soma -
+      0.00028826 * idade;
+  } else {
+    // Jackson-Pollock de 7 dobras para mulheres.
+    densidade =
+      1.097 -
+      0.00046971 * soma +
+      0.00000056 * soma * soma -
+      0.00012828 * idade;
+  }
 
   const percentual = (4.95 / densidade - 4.5) * 100;
 
