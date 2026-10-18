@@ -181,6 +181,7 @@ if (nome === "composicao") {
   }
 }
   if (nome === "inj") renderizarInjecoes();
+  if (nome === "medidas") renderizarMedidasCorporais();
 }
 
 // ---------- TREINOS ----------
@@ -872,4 +873,223 @@ function atualizarVisaoGeral() {
 }
 document.addEventListener("DOMContentLoaded", function () {
   abrirAba("inicio");
+});
+
+/* ==========================================
+   MEDIDAS CORPORAIS
+========================================== */
+
+const CHAVE_MEDIDAS_CORPORAIS = "fitness_medidas_db";
+let graficoMedidasCorporais = null;
+
+const CAMPOS_MEDIDAS = {
+  cintura: "Cintura",
+  abdomen: "Abdômen",
+  quadril: "Quadril",
+  torax: "Peito / tórax",
+  bracoDireito: "Braço direito",
+  bracoEsquerdo: "Braço esquerdo",
+  coxaDireita: "Coxa direita",
+  coxaEsquerda: "Coxa esquerda",
+  panturrilhaDireita: "Panturrilha direita",
+  panturrilhaEsquerda: "Panturrilha esquerda"
+};
+
+function obterMedidasCorporais() {
+  try {
+    const dados = JSON.parse(
+      localStorage.getItem(CHAVE_MEDIDAS_CORPORAIS) || "[]"
+    );
+
+    return Array.isArray(dados) ? dados : [];
+  } catch (erro) {
+    console.error("Erro ao ler medidas corporais:", erro);
+    return [];
+  }
+}
+
+function salvarMedidasCorporais() {
+  const campoData = document.getElementById("dataMedidas");
+  const data = campoData?.value;
+
+  if (!data) {
+    alert("Selecione a data da avaliação.");
+    return;
+  }
+
+  const registro = { data };
+  let quantidadePreenchida = 0;
+
+  for (const campo of Object.keys(CAMPOS_MEDIDAS)) {
+    const elemento = document.getElementById("medida" +
+      campo.charAt(0).toUpperCase() + campo.slice(1));
+
+    if (!elemento) continue;
+
+    const valorTexto = elemento.value.trim();
+
+    if (valorTexto !== "") {
+      const valor = Number(valorTexto.replace(",", "."));
+
+      if (!Number.isFinite(valor) || valor <= 0) {
+        alert("Confira o valor de " + CAMPOS_MEDIDAS[campo] +
+          ". Informe um número maior que zero.");
+        elemento.focus();
+        return;
+      }
+
+      registro[campo] = valor;
+      quantidadePreenchida++;
+    }
+  }
+
+  if (quantidadePreenchida === 0) {
+    alert("Preencha pelo menos uma medida corporal.");
+    return;
+  }
+
+  const historico = obterMedidasCorporais();
+  const indice = historico.findIndex(item => item.data === data);
+
+  if (indice >= 0) {
+    // Atualiza a data existente sem apagar medidas
+    // que ficaram em branco nesta edição.
+    historico[indice] = {
+      ...historico[indice],
+      ...registro
+    };
+  } else {
+    historico.push(registro);
+  }
+
+  historico.sort((a, b) => a.data.localeCompare(b.data));
+
+  try {
+    localStorage.setItem(
+      CHAVE_MEDIDAS_CORPORAIS,
+      JSON.stringify(historico)
+    );
+  } catch (erro) {
+    console.error("Erro ao salvar medidas:", erro);
+    alert("Não foi possível salvar. Verifique o espaço disponível.");
+    return;
+  }
+
+  renderizarMedidasCorporais();
+  alert("Medidas corporais salvas com sucesso!");
+}
+
+function renderizarMedidasCorporais() {
+  const historico = obterMedidasCorporais();
+
+  const lista = document.getElementById("historicoMedidas");
+
+  if (lista) {
+    lista.innerHTML = [...historico]
+      .sort((a, b) => b.data.localeCompare(a.data))
+      .map(item => {
+        const linhas = Object.keys(CAMPOS_MEDIDAS)
+          .filter(campo =>
+            item[campo] !== undefined &&
+            item[campo] !== null &&
+            Number.isFinite(Number(item[campo]))
+          )
+          .map(campo =>
+            `<div>${CAMPOS_MEDIDAS[campo]}: ${
+              Number(item[campo]).toFixed(1)
+            } cm</div>`
+          )
+          .join("");
+
+        return `
+          <div class="item-historico"
+               style="padding:12px;margin-bottom:10px;
+                      border:1px solid #ddd;border-radius:8px">
+            <strong>📏 ${formatarData(item.data)}</strong>
+            ${linhas}
+          </div>
+        `;
+      }).join("") || "<p>Nenhuma medida registrada.</p>";
+  }
+
+  atualizarGraficoMedidasCorporais();
+}
+
+function atualizarGraficoMedidasCorporais() {
+  const canvas = document.getElementById("graficoMedidas");
+  const seletor = document.getElementById("seletorMedida");
+  const resumo = document.getElementById("resumoEvolucaoMedida");
+
+  if (!canvas || !seletor) return;
+
+  const campo = seletor.value;
+  const historico = obterMedidasCorporais()
+    .filter(item =>
+      item[campo] !== undefined &&
+      item[campo] !== null &&
+      Number.isFinite(Number(item[campo]))
+    )
+    .sort((a, b) => a.data.localeCompare(b.data));
+
+  if (resumo) {
+    if (historico.length === 0) {
+      resumo.textContent = "Ainda não há registros para esta medida.";
+    } else {
+      const primeira = historico[0];
+      const ultima = historico[historico.length - 1];
+
+      resumo.textContent =
+        `Primeira: ${Number(primeira[campo]).toFixed(1)} cm · ` +
+        `Mais recente: ${Number(ultima[campo]).toFixed(1)} cm`;
+    }
+  }
+
+  if (typeof Chart === "undefined") return;
+
+  if (graficoMedidasCorporais) {
+    graficoMedidasCorporais.destroy();
+    graficoMedidasCorporais = null;
+  }
+
+  graficoMedidasCorporais = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels: historico.map(item => formatarData(item.data)),
+      datasets: [{
+        label: (CAMPOS_MEDIDAS[campo] || campo) + " (cm)",
+        data: historico.map(item => Number(item[campo])),
+        borderColor: "#7656d6",
+        backgroundColor: "rgba(118, 86, 214, 0.12)",
+        fill: true,
+        tension: 0.25
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: false
+        }
+      }
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const campoData = document.getElementById("dataMedidas");
+
+  if (campoData && !campoData.value) {
+    campoData.value = dataHoje();
+  }
+
+  const seletor = document.getElementById("seletorMedida");
+
+  if (seletor) {
+    seletor.addEventListener(
+      "change",
+      atualizarGraficoMedidasCorporais
+    );
+  }
+
+  renderizarMedidasCorporais();
 });
