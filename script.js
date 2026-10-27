@@ -262,6 +262,7 @@ function resetar() {
   renderizarTreinos();
 }
 
+
 function mostrarTreinoDia() {
   const caixa = document.getElementById("boxTreino");
   if (!caixa) return;
@@ -272,24 +273,108 @@ function mostrarTreinoDia() {
     "Sábado"
   ];
 
-  const sugestoes = [
-    "Descanso ativo ou alongamentos leves",
-    "Musculação: pernas e cardio leve",
-    "Membros superiores e core",
-    "Glúteos e posteriores",
-    "Costas e ombros",
-    "Treino completo ou cardio",
-    "Caminhada leve ou lazer"
+  const treinos = [
+    {
+      titulo: "Descanso e recuperação",
+      exercicios: [
+        "Caminhada leve ou alongamentos, se desejar.",
+        "Priorize a recuperação."
+      ]
+    },
+    {
+      titulo: "Segunda-feira — Quadríceps e panturrilhas",
+      exercicios: [
+        "Bicicleta: aquecimento de 5 minutos",
+        "Leg press — 3 × 10–12",
+        "Agachamento até o banco — 3 × 8–10, somente se confortável",
+        "Cadeira extensora — 2 × 12–15",
+        "Panturrilha na máquina — 3 × 12–20",
+        "Bicicleta leve — 5 minutos, opcional"
+      ]
+    },
+    {
+      titulo: "Terça-feira — Costas, bíceps e core",
+      exercicios: [
+        "Aquecimento: 4 minutos",
+        "Puxada na frente — 3 × 10–12",
+        "Remada baixa sentada — 3 × 10–12",
+        "Rosca direta — 3 × 10–12",
+        "Pallof press ou prancha elevada — 2–3 séries",
+        "Caminhada leve — 5 minutos, opcional"
+      ]
+    },
+    {
+      titulo: "Quarta-feira — Posteriores e glúteos",
+      exercicios: [
+        "Bicicleta: aquecimento de 5 minutos",
+        "Levantamento terra romeno com halteres — 3 × 8–10",
+        "Cadeira flexora — 3 × 10–12",
+        "Elevação pélvica — 3 × 10–12",
+        "Máquina abdutora — 2 × 15–20",
+        "Coice de glúteo na polia — 3 × 12–15 por perna",
+        "Bicicleta leve — 5 minutos, opcional"
+      ]
+    },
+    {
+      titulo: "Quinta-feira — Peito, ombros e tríceps",
+      exercicios: [
+        "Aquecimento: 4 minutos",
+        "Supino na máquina — 3 × 8–12",
+        "Remada com apoio para o peito — 3 × 10–12",
+        "Desenvolvimento de ombros na máquina — 2 × 10–12",
+        "Elevação lateral — 2 × 12–15",
+        "Tríceps na polia com corda — 2 × 12–15"
+      ]
+    },
+    {
+      titulo: "Sexta-feira — Corpo todo",
+      exercicios: [
+        "Aquecimento: 5 minutos",
+        "Leg press, em amplitude confortável — 2 × 10–12",
+        "Puxada na frente — 2 × 10–12",
+        "Supino na máquina — 2 × 10–12",
+        "Elevação pélvica — 2 × 10–12",
+        "Coice de glúteo na polia — 2 × 12–15 por perna",
+        "Pallof press — 2 × 10 por lado",
+        "Cardio leve — 5 minutos, opcional"
+      ]
+    },
+    
+{
+  titulo: "Sábado — Mobilidade, alongamento e aeróbico",
+  exercicios: [
+    "Caminhada leve ou bicicleta confortável — 10 a 20 minutos, conforme tolerância",
+    "Mobilidade suave de quadril — 2 minutos, sem forçar",
+    "Movimentos pélvicos suaves, deitada com os joelhos dobrados — 8 a 10 repetições, se confortável",
+    "Alongamento leve de glúteos e quadris — somente se não aumentar os sintomas",
+    "Respiração lenta e relaxamento — 2 minutos",
+    "Objetivo: terminar se sentindo melhor, não exausta"
+  ]
+},
   ];
 
   const dia = new Date().getDay();
+  const treino = treinos[dia];
 
-  caixa.innerHTML =
-    `<strong>Treino sugerido para ${dias[dia]}:</strong><br>` +
-    sugestoes[dia];
+  caixa.innerHTML = `
+    <div class="treino-dia">
+      <strong>Treino de hoje — ${dias[dia]}</strong>
+      <h3>${treino.titulo}</h3>
+      <ul>
+        ${treino.exercicios.map(exercicio => `<li>${exercicio}</li>`).join("")}
+      </ul>
+      <p><small>
+        Faça os movimentos com técnica e carga confortável.
+        Descanse de 60 a 120 segundos entre as séries.
+        Não force exercícios que provoquem dor no joelho.
+      </small></p>
+    </div>
+  `;
 
   caixa.style.display =
-    caixa.style.display === "none" ? "block" : "none";
+    caixa.style.display === "none" || getComputedStyle(caixa).display === "none"
+      ? "block"
+      : "none";
 }
 
 function renderizarTreinos() {
