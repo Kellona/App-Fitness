@@ -341,26 +341,123 @@ function mostrarTreinoDia() {
       `Programa: ${programa.nome || "Programa selecionado"}`;
     caixa.appendChild(nomePrograma);
 
-    if (indiceTreino >= 0 && Array.isArray(programa.semana[indiceTreino])) {
-      const lista = document.createElement("ul");
+    
+if (indiceTreino >= 0 && Array.isArray(programa.semana[indiceTreino])) {
+  const exercicios = programa.semana[indiceTreino];
 
-      programa.semana[indiceTreino].forEach(exercicio => {
-        const item = document.createElement("li");
-        item.textContent = exercicio;
-        lista.appendChild(item);
-      });
+  // Data local, sem risco de mudar de dia por causa do fuso horário.
+  const agora = new Date();
+  const dataHoje = [
+    agora.getFullYear(),
+    String(agora.getMonth() + 1).padStart(2, "0"),
+    String(agora.getDate()).padStart(2, "0")
+  ].join("-");
 
-      caixa.appendChild(lista);
-    } else {
-      const descanso = document.createElement("p");
-      descanso.textContent =
-        "Hoje é dia de recuperação. Se estiver confortável, faça uma caminhada leve ou mobilidade suave, sem forçar a lombar.";
-      caixa.appendChild(descanso);
+  // O progresso é separado por programa e por dia.
+  const chaveProgresso =
+    `fitness_treino_progresso_v1_${programa.programaId}_${dataHoje}`;
+
+  let concluidos = [];
+
+  try {
+    const salvo = localStorage.getItem(chaveProgresso);
+    if (salvo) {
+      const dados = JSON.parse(salvo);
+      if (Array.isArray(dados)) {
+        concluidos = dados;
+      }
+    }
+  } catch (erro) {
+    console.warn("Não foi possível carregar o progresso do treino.", erro);
+  }
+
+  const progresso = document.createElement("p");
+  progresso.style.fontWeight = "bold";
+  progresso.style.margin = "12px 0";
+
+  const lista = document.createElement("div");
+  lista.style.display = "grid";
+  lista.style.gap = "10px";
+
+  function atualizarProgresso() {
+    const total = exercicios.length;
+    const feitos = concluidos.length;
+
+    progresso.textContent =
+      `Progresso: ${feitos} de ${total} exercícios concluídos` +
+      (total > 0 ? ` — ${Math.round(feitos / total * 100)}%` : "");
+
+    if (total > 0 && feitos === total) {
+      progresso.textContent += " 🎉 Treino concluído!";
+    }
+  }
+
+  exercicios.forEach((exercicio, indice) => {
+    const linha = document.createElement("label");
+    linha.style.display = "flex";
+    linha.style.alignItems = "flex-start";
+    linha.style.gap = "10px";
+    linha.style.padding = "10px";
+    linha.style.background = "#ffffff";
+    linha.style.borderRadius = "8px";
+    linha.style.cursor = "pointer";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = concluidos.includes(indice);
+    checkbox.style.marginTop = "4px";
+    checkbox.style.flexShrink = "0";
+
+    const texto = document.createElement("span");
+    texto.textContent = exercicio;
+
+    if (checkbox.checked) {
+      texto.style.textDecoration = "line-through";
+      texto.style.opacity = "0.65";
     }
 
-    caixa.style.display = "block";
-    return;
-  }
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        if (!concluidos.includes(indice)) {
+          concluidos.push(indice);
+        }
+      } else {
+        concluidos = concluidos.filter(item => item !== indice);
+      }
+
+      try {
+        localStorage.setItem(
+          chaveProgresso,
+          JSON.stringify(concluidos)
+        );
+      } catch (erro) {
+        console.warn("Não foi possível salvar o progresso.", erro);
+      }
+
+      texto.style.textDecoration = checkbox.checked
+        ? "line-through"
+        : "none";
+      texto.style.opacity = checkbox.checked ? "0.65" : "1";
+
+      atualizarProgresso();
+    });
+
+    linha.appendChild(checkbox);
+    linha.appendChild(texto);
+    lista.appendChild(linha);
+  });
+
+  caixa.appendChild(progresso);
+  caixa.appendChild(lista);
+  atualizarProgresso();
+
+} else {
+  const descanso = document.createElement("p");
+  descanso.textContent =
+    "Hoje é dia de recuperação. Se estiver confortável, faça uma caminhada leve ou mobilidade suave, sem forçar a lombar.";
+  caixa.appendChild(descanso);
+}
+
 
   // Alternativa original: mantém o treino genérico se não houver
   // programa selecionado ou se os dados do programa não forem válidos.
