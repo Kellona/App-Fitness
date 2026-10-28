@@ -231,6 +231,7 @@
             nivel: programa.nivel,
             objetivo: programa.objetivo,
             dias: programa.dias,
+            semana: programa.semana,
             selecionadoEm: new Date().toISOString()
           };
 

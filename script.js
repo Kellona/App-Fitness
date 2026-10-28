@@ -263,119 +263,124 @@ function resetar() {
 }
 
 
+
 function mostrarTreinoDia() {
   const caixa = document.getElementById("boxTreino");
   if (!caixa) return;
 
+  // Mantém a possibilidade de abrir e fechar a caixa.
+  const estavaVisivel = caixa.style.display === "block";
+
+  if (estavaVisivel) {
+    caixa.style.display = "none";
+    return;
+  }
+
   const dias = [
-    "Domingo", "Segunda-feira", "Terça-feira",
-    "Quarta-feira", "Quinta-feira", "Sexta-feira",
+    "Domingo",
+    "Segunda-feira",
+    "Terça-feira",
+    "Quarta-feira",
+    "Quinta-feira",
+    "Sexta-feira",
     "Sábado"
   ];
 
-  const treinos = [
-    {
-      titulo: "Descanso e recuperação",
-      exercicios: [
-        "Caminhada leve ou alongamentos, se desejar.",
-        "Priorize a recuperação."
-      ]
-    },
-    {
-      titulo: "Segunda-feira — Quadríceps e panturrilhas",
-      exercicios: [
-        "Bicicleta: aquecimento de 5 minutos",
-        "Leg press — 3 × 10–12",
-        "Agachamento até o banco — 3 × 8–10, somente se confortável",
-        "Cadeira extensora — 2 × 12–15",
-        "Panturrilha na máquina — 3 × 12–20",
-        "Bicicleta leve — 5 minutos, opcional"
-      ]
-    },
-    {
-      titulo: "Terça-feira — Costas, bíceps e core",
-      exercicios: [
-        "Aquecimento: 4 minutos",
-        "Puxada na frente — 3 × 10–12",
-        "Remada baixa sentada — 3 × 10–12",
-        "Rosca direta — 3 × 10–12",
-        "Pallof press ou prancha elevada — 2–3 séries",
-        "Caminhada leve — 5 minutos, opcional"
-      ]
-    },
-    {
-      titulo: "Quarta-feira — Posteriores e glúteos",
-      exercicios: [
-        "Bicicleta: aquecimento de 5 minutos",
-        "Levantamento terra romeno com halteres — 3 × 8–10",
-        "Cadeira flexora — 3 × 10–12",
-        "Elevação pélvica — 3 × 10–12",
-        "Máquina abdutora — 2 × 15–20",
-        "Coice de glúteo na polia — 3 × 12–15 por perna",
-        "Bicicleta leve — 5 minutos, opcional"
-      ]
-    },
-    {
-      titulo: "Quinta-feira — Peito, ombros e tríceps",
-      exercicios: [
-        "Aquecimento: 4 minutos",
-        "Supino na máquina — 3 × 8–12",
-        "Remada com apoio para o peito — 3 × 10–12",
-        "Desenvolvimento de ombros na máquina — 2 × 10–12",
-        "Elevação lateral — 2 × 12–15",
-        "Tríceps na polia com corda — 2 × 12–15"
-      ]
-    },
-    {
-      titulo: "Sexta-feira — Corpo todo",
-      exercicios: [
-        "Aquecimento: 5 minutos",
-        "Leg press, em amplitude confortável — 2 × 10–12",
-        "Puxada na frente — 2 × 10–12",
-        "Supino na máquina — 2 × 10–12",
-        "Elevação pélvica — 2 × 10–12",
-        "Coice de glúteo na polia — 2 × 12–15 por perna",
-        "Pallof press — 2 × 10 por lado",
-        "Cardio leve — 5 minutos, opcional"
-      ]
-    },
-    
-{
-  titulo: "Sábado — Mobilidade, alongamento e aeróbico",
-  exercicios: [
-    "Caminhada leve ou bicicleta confortável — 10 a 20 minutos, conforme tolerância",
-    "Mobilidade suave de quadril — 2 minutos, sem forçar",
-    "Movimentos pélvicos suaves, deitada com os joelhos dobrados — 8 a 10 repetições, se confortável",
-    "Alongamento leve de glúteos e quadris — somente se não aumentar os sintomas",
-    "Respiração lenta e relaxamento — 2 minutos",
-    "Objetivo: terminar se sentindo melhor, não exausta"
-  ]
-},
+  const hoje = new Date().getDay();
+  const nomeDia = dias[hoje];
+
+  // Tenta recuperar o programa escolhido na biblioteca.
+  let programa = null;
+
+  try {
+    const salvo = localStorage.getItem(
+      "fitness_treino_ativo_biblioteca_v1"
+    );
+
+    if (salvo) {
+      programa = JSON.parse(salvo);
+    }
+  } catch (erro) {
+    console.warn("Não foi possível ler o programa selecionado.", erro);
+  }
+
+  // Se houver programa válido, mostra o treino correspondente.
+  if (
+    programa &&
+    Array.isArray(programa.semana) &&
+    programa.semana.length > 0
+  ) {
+    const quantidade = Number(programa.dias);
+    let indiceTreino = -1;
+
+    // Distribuição sugerida dos treinos ao longo da semana.
+    if (quantidade === 3) {
+      const agenda = { 1: 0, 3: 1, 5: 2 }; // Seg, Qua, Sex
+      indiceTreino = agenda[hoje] ?? -1;
+    } else if (quantidade === 4) {
+      const agenda = { 1: 0, 2: 1, 4: 2, 5: 3 }; // Seg, Ter, Qui, Sex
+      indiceTreino = agenda[hoje] ?? -1;
+    } else if (quantidade === 5) {
+      const agenda = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 }; // Seg a Sex
+      indiceTreino = agenda[hoje] ?? -1;
+    } else {
+      // Alternativa para programas com outra frequência.
+      indiceTreino = hoje >= 1 && hoje <= programa.semana.length
+        ? hoje - 1
+        : -1;
+    }
+
+    caixa.innerHTML = "";
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = `Treino de hoje — ${nomeDia}`;
+    caixa.appendChild(titulo);
+
+    const nomePrograma = document.createElement("p");
+    nomePrograma.textContent =
+      `Programa: ${programa.nome || "Programa selecionado"}`;
+    caixa.appendChild(nomePrograma);
+
+    if (indiceTreino >= 0 && Array.isArray(programa.semana[indiceTreino])) {
+      const lista = document.createElement("ul");
+
+      programa.semana[indiceTreino].forEach(exercicio => {
+        const item = document.createElement("li");
+        item.textContent = exercicio;
+        lista.appendChild(item);
+      });
+
+      caixa.appendChild(lista);
+    } else {
+      const descanso = document.createElement("p");
+      descanso.textContent =
+        "Hoje é dia de recuperação. Se estiver confortável, faça uma caminhada leve ou mobilidade suave, sem forçar a lombar.";
+      caixa.appendChild(descanso);
+    }
+
+    caixa.style.display = "block";
+    return;
+  }
+
+  // Alternativa original: mantém o treino genérico se não houver
+  // programa selecionado ou se os dados do programa não forem válidos.
+  const sugestoes = [
+    "Descanso ativo ou alongamentos leves",
+    "Musculação: pernas e cardio leve",
+    "Membros superiores e core",
+    "Glúteos e posteriores",
+    "Costas e ombros",
+    "Treino completo ou cardio",
+    "Caminhada leve ou lazer"
   ];
 
-  const dia = new Date().getDay();
-  const treino = treinos[dia];
+  caixa.innerHTML =
+    `<strong>Treino sugerido para ${nomeDia}:</strong><br>` +
+    sugestoes[hoje];
 
-  caixa.innerHTML = `
-    <div class="treino-dia">
-      <strong>Treino de hoje — ${dias[dia]}</strong>
-      <h3>${treino.titulo}</h3>
-      <ul>
-        ${treino.exercicios.map(exercicio => `<li>${exercicio}</li>`).join("")}
-      </ul>
-      <p><small>
-        Faça os movimentos com técnica e carga confortável.
-        Descanse de 60 a 120 segundos entre as séries.
-        Não force exercícios que provoquem dor no joelho.
-      </small></p>
-    </div>
-  `;
-
-  caixa.style.display =
-    caixa.style.display === "none" || getComputedStyle(caixa).display === "none"
-      ? "block"
-      : "none";
+  caixa.style.display = "block";
 }
+
 
 function renderizarTreinos() {
   const treinos = obterTreinos();
