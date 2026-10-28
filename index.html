@@ -135,11 +135,13 @@
             <button class="btn-add" onclick="abrirRegistroData()">Registrar Treino</button>
             <button class="btn-save" onclick="salvarRegistro()">Salvar Hoje</button>
             <button class="btn-reset" onclick="resetar()">Resetar</button>
-            <button class="btn-treino" onclick="mostrarTreinoDia()">Ver Treino de Hoje</button>
+           <button class="btn-treino" onclick="mostrarTreinoDia()">Ver Treino de Hoje</button>
+           <button class="btn-treino" type="button" onclick="abrirBibliotecaTreinos()">Biblioteca de Treinos</button>
 
-            <div id="boxTreino" style="display:none; background:#eef3ff; padding:20px; margin-top:20px; border-radius:12px; text-align:left;"></div>
-            <div class="historic-box" id="historicoLista"></div>
-
+           <div id="boxTreino" style="display:none; background:#eef3ff; padding:20px; margin-top:20px; border-radius:12px; text-align:left;"></div>
+           <div id="bibliotecaTreinos" style="display:none; margin-top:20px; padding:20px; border-radius:12px; background:#f5f7fb; text-align:left;"></div>
+           <div class="historic-box" id="historicoLista"></div> 
+          
             <h2>Gráfico Mensal</h2>
             <canvas id="graficoMensal" width="350" height="200"></canvas>
         </div>
@@ -452,5 +454,7 @@
     <!-- JavaScript Externo -->
    <script src="script.js"></script>
    <script src="composicao.js"></script>
+   <script src="biblioteca.js"></script>
+
 </body>
 </html>
