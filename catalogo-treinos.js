@@ -294,10 +294,10 @@
           "#exerciciosPersonalizados"
         ).value.trim();
 
-        const exercicios = textoExercicios
-          .split("\n")
-          .map(item => item.trim())
-          .filter(Boolean);
+       const exercicios = textoExercicios
+         .split(/\r?\n/)
+         .map(item => item.trim())
+         .filter(Boolean);
 
         if (!nome || exercicios.length === 0) {
           avisar("Informe o nome e pelo menos um exercício.");
