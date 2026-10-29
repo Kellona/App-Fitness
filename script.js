@@ -1,4 +1,3 @@
-
 /* =====================================================
    PAINEL FITNESS
    Treinos, peso, IMC, injeções e sincronização.
@@ -112,7 +111,7 @@ function formatarData(data) {
   if (!data) return "";
   const partes = data.split("-");
   return partes.length === 3
-    ? `${partes[2]}/${partes[1]}/${partes[0]}`
+    ? `partes[2]/{partes[1]}/${partes[0]}`
     : data;
 }
 
@@ -263,221 +262,119 @@ function resetar() {
 }
 
 
-
 function mostrarTreinoDia() {
   const caixa = document.getElementById("boxTreino");
   if (!caixa) return;
 
-  // Mantém a possibilidade de abrir e fechar a caixa.
-  const estavaVisivel = caixa.style.display === "block";
-
-  if (estavaVisivel) {
-    caixa.style.display = "none";
-    return;
-  }
-
   const dias = [
-    "Domingo",
-    "Segunda-feira",
-    "Terça-feira",
-    "Quarta-feira",
-    "Quinta-feira",
-    "Sexta-feira",
+    "Domingo", "Segunda-feira", "Terça-feira",
+    "Quarta-feira", "Quinta-feira", "Sexta-feira",
     "Sábado"
   ];
 
-  const hoje = new Date().getDay();
-  const nomeDia = dias[hoje];
-
-  // Tenta recuperar o programa escolhido na biblioteca.
-  let programa = null;
-
-  try {
-    const salvo = localStorage.getItem(
-      "fitness_treino_ativo_biblioteca_v1"
-    );
-
-    if (salvo) {
-      programa = JSON.parse(salvo);
-    }
-  } catch (erro) {
-    console.warn("Não foi possível ler o programa selecionado.", erro);
-  }
-
-  // Se houver programa válido, mostra o treino correspondente.
-  if (
-    programa &&
-    Array.isArray(programa.semana) &&
-    programa.semana.length > 0
-  ) {
-    const quantidade = Number(programa.dias);
-    let indiceTreino = -1;
-
-    // Distribuição sugerida dos treinos ao longo da semana.
-    if (quantidade === 3) {
-      const agenda = { 1: 0, 3: 1, 5: 2 }; // Seg, Qua, Sex
-      indiceTreino = agenda[hoje] ?? -1;
-    } else if (quantidade === 4) {
-      const agenda = { 1: 0, 2: 1, 4: 2, 5: 3 }; // Seg, Ter, Qui, Sex
-      indiceTreino = agenda[hoje] ?? -1;
-    } else if (quantidade === 5) {
-      const agenda = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 }; // Seg a Sex
-      indiceTreino = agenda[hoje] ?? -1;
-    } else {
-      // Alternativa para programas com outra frequência.
-      indiceTreino = hoje >= 1 && hoje <= programa.semana.length
-        ? hoje - 1
-        : -1;
-    }
-
-    caixa.innerHTML = "";
-
-    const titulo = document.createElement("h3");
-    titulo.textContent = `Treino de hoje — ${nomeDia}`;
-    caixa.appendChild(titulo);
-
-    const nomePrograma = document.createElement("p");
-    nomePrograma.textContent =
-      `Programa: ${programa.nome || "Programa selecionado"}`;
-    caixa.appendChild(nomePrograma);
-
+  const treinos = [
+    {
+      titulo: "Descanso e recuperação",
+      exercicios: [
+        "Caminhada leve ou alongamentos, se desejar.",
+        "Priorize a recuperação."
+      ]
+    },
+    {
+      titulo: "Segunda-feira — Quadríceps e panturrilhas",
+      exercicios: [
+        "Bicicleta: aquecimento de 5 minutos",
+        "Leg press — 3 × 10–12",
+        "Agachamento até o banco — 3 × 8–10, somente se confortável",
+        "Cadeira extensora — 2 × 12–15",
+        "Panturrilha na máquina — 3 × 12–20",
+        "Bicicleta leve — 5 minutos, opcional"
+      ]
+    },
+    {
+      titulo: "Terça-feira — Costas, bíceps e core",
+      exercicios: [
+        "Aquecimento: 4 minutos",
+        "Puxada na frente — 3 × 10–12",
+        "Remada baixa sentada — 3 × 10–12",
+        "Rosca direta — 3 × 10–12",
+        "Pallof press ou prancha elevada — 2–3 séries",
+        "Caminhada leve — 5 minutos, opcional"
+      ]
+    },
+    {
+      titulo: "Quarta-feira — Posteriores e glúteos",
+      exercicios: [
+        "Bicicleta: aquecimento de 5 minutos",
+        "Levantamento terra romeno com halteres — 3 × 8–10",
+        "Cadeira flexora — 3 × 10–12",
+        "Elevação pélvica — 3 × 10–12",
+        "Máquina abdutora — 2 × 15–20",
+        "Coice de glúteo na polia — 3 × 12–15 por perna",
+        "Bicicleta leve — 5 minutos, opcional"
+      ]
+    },
+    {
+      titulo: "Quinta-feira — Peito, ombros e tríceps",
+      exercicios: [
+        "Aquecimento: 4 minutos",
+        "Supino na máquina — 3 × 8–12",
+        "Remada com apoio para o peito — 3 × 10–12",
+        "Desenvolvimento de ombros na máquina — 2 × 10–12",
+        "Elevação lateral — 2 × 12–15",
+        "Tríceps na polia com corda — 2 × 12–15"
+      ]
+    },
+    {
+      titulo: "Sexta-feira — Corpo todo",
+      exercicios: [
+        "Aquecimento: 5 minutos",
+        "Leg press, em amplitude confortável — 2 × 10–12",
+        "Puxada na frente — 2 × 10–12",
+        "Supino na máquina — 2 × 10–12",
+        "Elevação pélvica — 2 × 10–12",
+        "Coice de glúteo na polia — 2 × 12–15 por perna",
+        "Pallof press — 2 × 10 por lado",
+        "Cardio leve — 5 minutos, opcional"
+      ]
+    },
     
-if (indiceTreino >= 0 && Array.isArray(programa.semana[indiceTreino])) {
-  const exercicios = programa.semana[indiceTreino];
-
-  // Data local, sem risco de mudar de dia por causa do fuso horário.
-  const agora = new Date();
-  const dataHoje = [
-    agora.getFullYear(),
-    String(agora.getMonth() + 1).padStart(2, "0"),
-    String(agora.getDate()).padStart(2, "0")
-  ].join("-");
-
-  // O progresso é separado por programa e por dia.
-  const chaveProgresso =
-    `fitness_treino_progresso_v1_${programa.programaId}_${dataHoje}`;
-
-  let concluidos = [];
-
-  try {
-    const salvo = localStorage.getItem(chaveProgresso);
-    if (salvo) {
-      const dados = JSON.parse(salvo);
-      if (Array.isArray(dados)) {
-        concluidos = dados;
-      }
-    }
-  } catch (erro) {
-    console.warn("Não foi possível carregar o progresso do treino.", erro);
-  }
-
-  const progresso = document.createElement("p");
-  progresso.style.fontWeight = "bold";
-  progresso.style.margin = "12px 0";
-
-  const lista = document.createElement("div");
-  lista.style.display = "grid";
-  lista.style.gap = "10px";
-
-  function atualizarProgresso() {
-    const total = exercicios.length;
-    const feitos = concluidos.length;
-
-    progresso.textContent =
-      `Progresso: ${feitos} de ${total} exercícios concluídos` +
-      (total > 0 ? ` — ${Math.round(feitos / total * 100)}%` : "");
-
-    if (total > 0 && feitos === total) {
-      progresso.textContent += " 🎉 Treino concluído!";
-    }
-  }
-
-  exercicios.forEach((exercicio, indice) => {
-    const linha = document.createElement("label");
-    linha.style.display = "flex";
-    linha.style.alignItems = "flex-start";
-    linha.style.gap = "10px";
-    linha.style.padding = "10px";
-    linha.style.background = "#ffffff";
-    linha.style.borderRadius = "8px";
-    linha.style.cursor = "pointer";
-
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = concluidos.includes(indice);
-    checkbox.style.marginTop = "4px";
-    checkbox.style.flexShrink = "0";
-
-    const texto = document.createElement("span");
-    texto.textContent = exercicio;
-
-    if (checkbox.checked) {
-      texto.style.textDecoration = "line-through";
-      texto.style.opacity = "0.65";
-    }
-
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked) {
-        if (!concluidos.includes(indice)) {
-          concluidos.push(indice);
-        }
-      } else {
-        concluidos = concluidos.filter(item => item !== indice);
-      }
-
-      try {
-        localStorage.setItem(
-          chaveProgresso,
-          JSON.stringify(concluidos)
-        );
-      } catch (erro) {
-        console.warn("Não foi possível salvar o progresso.", erro);
-      }
-
-      texto.style.textDecoration = checkbox.checked
-        ? "line-through"
-        : "none";
-      texto.style.opacity = checkbox.checked ? "0.65" : "1";
-
-      atualizarProgresso();
-    });
-
-    linha.appendChild(checkbox);
-    linha.appendChild(texto);
-    lista.appendChild(linha);
-  });
-
-  caixa.appendChild(progresso);
-  caixa.appendChild(lista);
-  atualizarProgresso();
-
-} else {
-  const descanso = document.createElement("p");
-  descanso.textContent =
-    "Hoje é dia de recuperação. Se estiver confortável, faça uma caminhada leve ou mobilidade suave, sem forçar a lombar.";
-  caixa.appendChild(descanso);
-}
-
-
-  // Alternativa original: mantém o treino genérico se não houver
-  // programa selecionado ou se os dados do programa não forem válidos.
-  const sugestoes = [
-    "Descanso ativo ou alongamentos leves",
-    "Musculação: pernas e cardio leve",
-    "Membros superiores e core",
-    "Glúteos e posteriores",
-    "Costas e ombros",
-    "Treino completo ou cardio",
-    "Caminhada leve ou lazer"
+{
+  titulo: "Sábado — Mobilidade, alongamento e aeróbico",
+  exercicios: [
+    "Caminhada leve ou bicicleta confortável — 10 a 20 minutos, conforme tolerância",
+    "Mobilidade suave de quadril — 2 minutos, sem forçar",
+    "Movimentos pélvicos suaves, deitada com os joelhos dobrados — 8 a 10 repetições, se confortável",
+    "Alongamento leve de glúteos e quadris — somente se não aumentar os sintomas",
+    "Respiração lenta e relaxamento — 2 minutos",
+    "Objetivo: terminar se sentindo melhor, não exausta"
+  ]
+},
   ];
 
-  caixa.innerHTML =
-    `<strong>Treino sugerido para ${nomeDia}:</strong><br>` +
-    sugestoes[hoje];
+  const dia = new Date().getDay();
+  const treino = treinos[dia];
 
-  caixa.style.display = "block";
+  caixa.innerHTML = `
+    <div class="treino-dia">
+      <strong>Treino de hoje — ${dias[dia]}</strong>
+      <h3>${treino.titulo}</h3>
+      <ul>
+        ${treino.exercicios.map(exercicio => `<li>${exercicio}</li>`).join("")}
+      </ul>
+      <p><small>
+        Faça os movimentos com técnica e carga confortável.
+        Descanse de 60 a 120 segundos entre as séries.
+        Não force exercícios que provoquem dor no joelho.
+      </small></p>
+    </div>
+  `;
+
+  caixa.style.display =
+    caixa.style.display === "none" || getComputedStyle(caixa).display === "none"
+      ? "block"
+      : "none";
 }
-
 
 function renderizarTreinos() {
   const treinos = obterTreinos();

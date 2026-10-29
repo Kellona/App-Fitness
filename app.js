@@ -236,7 +236,7 @@ atualizarTela();
             li.style.fontSize = "14px";
 
             li.innerHTML = `
-                <span>${item.data} — <b>${item.total} treinos</b></span>
+                <span>item.data—<b>{item.total} treinos</b></span>
                 <button 
                     onclick="excluirRegistro(${index})"
                     style="

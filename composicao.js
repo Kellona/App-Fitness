@@ -1,22 +1,26 @@
-
 /* Painel Fitness - avaliação corporal corrigida */
+
 
 let chartMassaMagra = null;
 let chartGordura = null;
 
+
 // Lê as avaliações atuais ou os dados salvos no formato antigo.
 function obterAvaliacoesCorporais() {
   let avaliacoes = [];
+
 
   try {
     const novas = JSON.parse(
       localStorage.getItem('fitness_avaliacao_db') || '[]'
     );
 
+
     if (Array.isArray(novas)) avaliacoes = novas;
   } catch (e) {
     console.error('Erro ao ler avaliações novas:', e);
   }
+
 
   if (avaliacoes.length === 0) {
     try {
@@ -24,11 +28,13 @@ function obterAvaliacoesCorporais() {
         localStorage.getItem('avaliacoesDobras') || '[]'
       );
 
+
       if (Array.isArray(antigas)) avaliacoes = antigas;
     } catch (e) {
       console.error('Erro ao ler avaliações antigas:', e);
     }
   }
+
 
   return avaliacoes
     .map(a => ({
@@ -42,29 +48,37 @@ function obterAvaliacoesCorporais() {
     .filter(a => a.data);
 }
 
+
 function salvarListaAvaliacoes(avaliacoes) {
   const conteudo = JSON.stringify(avaliacoes);
+
 
   localStorage.setItem('fitness_avaliacao_db', conteudo);
   localStorage.setItem('avaliacoesDobras', conteudo);
 }
+
 
 // Lê os valores numéricos, aceitando vírgula decimal.
 function numeroCampo(id) {
   const campo = document.getElementById(id);
   if (!campo) return NaN;
 
+
   const texto = String(campo.value ?? '').trim().replace(',', '.');
+
 
   if (texto === '') return NaN;
 
+
   return Number(texto);
 }
+
 
 function salvarAvaliacaoCorporal() {
   const data = document.getElementById('dataAvaliacao')?.value;
   const idade = numeroCampo('idadeAvaliacao');
   const peso = numeroCampo('pesoAvaliacao');
+
 
   const idsDobras = [
     'dobraPeitoral',
@@ -76,7 +90,9 @@ function salvarAvaliacaoCorporal() {
     'dobraCoxa'
   ];
 
+
   const dobras = idsDobras.map(numeroCampo);
+
 
   if (
     !data ||
@@ -90,17 +106,22 @@ function salvarAvaliacaoCorporal() {
     return;
   }
 
+
   if (dobras.some(v => !Number.isFinite(v) || v <= 0)) {
     alert('Preencha as sete dobras com medidas maiores que zero.');
     return;
   }
 
+
   const soma = dobras.reduce((total, valor) => total + valor, 0);
+
 
   
   const sexo = document.getElementById("sexoAvaliacao")?.value || "feminino";
 
+
   let densidade;
+
 
   if (sexo === "masculino") {
     // Jackson-Pollock de 7 dobras para homens.
@@ -118,7 +139,9 @@ function salvarAvaliacaoCorporal() {
       0.00012828 * idade;
   }
 
+
   const percentual = (4.95 / densidade - 4.5) * 100;
+
 
   if (
     !Number.isFinite(densidade) ||
@@ -131,10 +154,12 @@ function salvarAvaliacaoCorporal() {
     return;
   }
 
+
   const pct = Number(percentual.toFixed(2));
   const massaGorda = Number((peso * pct / 100).toFixed(2));
   const massaMagra = Number((peso - massaGorda).toFixed(2));
   const somaArredondada = Number(soma.toFixed(1));
+
 
   const avaliacao = {
     data,
@@ -145,13 +170,16 @@ function salvarAvaliacaoCorporal() {
     massaMagraKg: massaMagra,
     massaGordaKg: massaGorda,
 
+
     // Compatibilidade com registros antigos.
     percentualGordura: pct,
     massaMagra,
     massaGorda,
     soma: somaArredondada,
 
+
     protocolo: 'Jackson-Pollock 7 dobras - mulheres',
+
 
     dobras: {
       peitoral: dobras[0],
@@ -164,11 +192,14 @@ function salvarAvaliacaoCorporal() {
     }
   };
 
+
   const historico = obterAvaliacoesCorporais()
     .filter(a => a.data !== data);
 
+
   historico.push(avaliacao);
   historico.sort((a, b) => a.data.localeCompare(b.data));
+
 
   try {
     salvarListaAvaliacoes(historico);
@@ -178,7 +209,9 @@ function salvarAvaliacaoCorporal() {
     return;
   }
 
+
   const resultado = document.getElementById('resultadoAvaliacao');
+
 
   if (resultado) {
     resultado.innerHTML = `
@@ -192,22 +225,27 @@ function salvarAvaliacaoCorporal() {
     `;
   }
 
+
   renderizarAvaliacaoCorporal();
   alert('Avaliação corporal salva com sucesso!');
 }
+
 
 // Nome alternativo para botões que chamem esta função.
 function calcularComposicaoCorporal() {
   salvarAvaliacaoCorporal();
 }
 
+
 function renderizarAvaliacaoCorporal() {
   const historico = obterAvaliacoesCorporais()
     .sort((a, b) => a.data.localeCompare(b.data));
 
+
   const lista =
     document.getElementById('historicoDobras') ||
     document.getElementById('historicoAvaliacaoCorporal');
+
 
   if (lista) {
     lista.innerHTML = [...historico].reverse().map(a => `
@@ -229,17 +267,22 @@ function renderizarAvaliacaoCorporal() {
     `).join('') || '<p>Nenhuma avaliação registrada.</p>';
   }
 
+
   if (typeof Chart === 'undefined') return;
+
 
   const ordenadas = [...historico];
   const datas = ordenadas.map(a => a.data);
 
+
   const canvasMagra = document.getElementById('graficoMassaMagra');
   const canvasGordura = document.getElementById('graficoPercentualGordura');
+
 
   if (canvasMagra) {
     if (chartMassaMagra) chartMassaMagra.destroy();
     chartMassaMagra = null;
+
 
     if (ordenadas.length > 0) {
       chartMassaMagra = new Chart(canvasMagra, {
@@ -258,9 +301,11 @@ function renderizarAvaliacaoCorporal() {
     }
   }
 
+
   if (canvasGordura) {
     if (chartGordura) chartGordura.destroy();
     chartGordura = null;
+
 
     if (ordenadas.length > 0) {
       chartGordura = new Chart(canvasGordura, {
@@ -280,42 +325,53 @@ function renderizarAvaliacaoCorporal() {
   }
 }
 
+
 function apagarAvaliacaoCorporal(data) {
   if (!confirm(
     `Deseja excluir a avaliação corporal de ${data}? Essa ação não poderá ser desfeita.`
   )) return;
 
+
   const atualizadas = obterAvaliacoesCorporais()
     .filter(a => a.data !== data);
 
+
   salvarListaAvaliacoes(atualizadas);
+
 
   const resultado = document.getElementById('resultadoAvaliacao');
   if (resultado) resultado.innerHTML = '';
+
 
   renderizarAvaliacaoCorporal();
   alert('Avaliação excluída.');
 }
 
+
 function gerarRelatorioCorporal() {
   const historico = obterAvaliacoesCorporais()
     .sort((a, b) => a.data.localeCompare(b.data));
+
 
   if (historico.length < 2) {
     alert('É necessário ter pelo menos duas avaliações para comparar.');
     return;
   }
 
+
   const primeira = historico[0];
   const ultima = historico[historico.length - 1];
-  const formatar = n => `${n > 0 ? '+' : ''}${n.toFixed(1)}`;
+  const formatar = n => `n>0?'+':''{n.toFixed(1)}`;
+
 
   const relatorio = document.getElementById('relatorioCorporal');
+
 
   if (!relatorio) {
     alert('Não encontrei a área do relatório no HTML.');
     return;
   }
+
 
   relatorio.innerHTML = `
     <div style="background:#f8f9fa;padding:15px;border:1px solid #ddd;border-radius:10px;margin-top:15px">
@@ -327,24 +383,30 @@ function gerarRelatorioCorporal() {
   `;
 }
 
+
 function imprimirRelatorioCorporal() {
   const relatorio = document.getElementById("relatorioCorporal");
+
 
   if (!relatorio || !relatorio.innerHTML.trim()) {
     alert("Gere o relatório comparativo antes de imprimir.");
     return;
   }
 
+
   const janela = window.open("", "_blank");
+
 
   if (!janela) {
     alert("O navegador bloqueou a janela de impressão. Permita pop-ups para este site.");
     return;
   }
 
+
   const estilos = Array.from(
     document.querySelectorAll('link[rel="stylesheet"], style')
   ).map(elemento => elemento.outerHTML).join("\n");
+
 
   janela.document.open();
   janela.document.write(`
@@ -366,10 +428,12 @@ body {
   line-height: 1.5;
 }
 
+
 @page {
   size: A4;
   margin: 20mm 18mm;
 }
+
 
 @media print {
   body {
@@ -388,11 +452,13 @@ body {
   `);
   janela.document.close();
 
+
   janela.onload = function () {
     janela.focus();
     janela.print();
   };
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
   renderizarAvaliacaoCorporal();
