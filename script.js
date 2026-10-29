@@ -107,13 +107,17 @@ function dataHoje() {
   return data.toISOString().slice(0, 10);
 }
 
+
 function formatarData(data) {
   if (!data) return "";
+
   const partes = data.split("-");
+
   return partes.length === 3
-    ? `partes[2]/{partes[1]}/${partes[0]}`
+    ? `${partes[2]}/${partes[1]}/${partes[0]}`
     : data;
 }
+
 
 // ---------- INICIALIZAÇÃO ----------
 
