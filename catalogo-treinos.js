@@ -328,7 +328,7 @@
         renderizarDetalhes();
         ativarPrograma(programa);
         avisar("Treino personalizado salvo!");
-      }
+    
     });
 
     painel.addEventListener("click", evento => {
