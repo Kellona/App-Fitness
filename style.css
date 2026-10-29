@@ -612,3 +612,99 @@ input:focus, select:focus {
         align-self: stretch !important;
     }
 }
+
+
+/* ==========================================
+   CATÁLOGO DE TREINOS — PAINEL FITNESS
+========================================== */
+
+.catalogo-treinos {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid #E5E5EF;
+  border-radius: 16px;
+  background: #FFFFFF;
+  text-align: left;
+}
+
+.catalogo-cabecalho h2 {
+  margin: 5px 0 8px;
+}
+
+.catalogo-etiqueta {
+  color: #8B7CF6;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.catalogo-treinos label {
+  display: block;
+  margin: 14px 0 6px;
+  font-weight: 600;
+}
+
+.catalogo-treinos input,
+.catalogo-treinos select,
+.catalogo-treinos textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 11px;
+  border: 1px solid #E5E5EF;
+  border-radius: 9px;
+  box-sizing: border-box;
+  font: inherit;
+  background: #FFFFFF;
+}
+
+.catalogo-treinos textarea {
+  resize: vertical;
+}
+
+.catalogo-detalhes {
+  margin-top: 16px;
+  padding: 15px;
+  border-radius: 12px;
+  background: #F8F7FF;
+  overflow-wrap: anywhere;
+}
+
+.catalogo-detalhes li {
+  margin: 8px 0;
+}
+
+.catalogo-botao {
+  background: #252445;
+  color: #FFFFFF;
+  margin-top: 12px;
+}
+
+.catalogo-botao.secundario {
+  background: #7465E8;
+}
+
+.catalogo-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #E5E5EF;
+}
+
+.catalogo-item button {
+  width: auto;
+  margin: 8px 8px 0 0;
+  padding: 9px 12px;
+  font-size: 13px;
+  background: #E8E5FF;
+  color: #252445;
+}
+
+.catalogo-mensagem {
+  min-height: 20px;
+  color: #5145CD;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .catalogo-treinos {
+    padding: 14px;
+  }
+}
